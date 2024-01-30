@@ -1,0 +1,63 @@
+
+// connect to operational Database with external table Product
+.create external table products (ProductID: int, ProductNumber: string,  Name: string) 
+kind=sql
+table=[SalesLT.Product]
+( 
+   h@'Server=tcp:adx-fabric-dbserver.database.windows.net,1433;Initial Catalog=aworks;User Id=SqlAdmin;Password=ChangeYourAdminPassword1'
+)
+with 
+(
+   createifnotexists = true
+)  
+
+// create tables for Orders + transformations 
+.create table [bronzeOrders] (SalesOrderID:long,SalesOrderDetailID:long,OrderQty:long,ProductID:int,UnitPrice:real,UnitPriceDiscount:real,LineTotal:real,ModifiedDate:datetime)
+
+.create table [orders] (SalesOrderID:long,SalesOrderDetailID:long,OrderQty:long,ProductID:int,UnitPrice:real,UnitPriceDiscount:real,LineTotal:real,ModifiedDate:datetime, UnitFinalPrice:real, PurchaseDate:datetime)
+
+// use update policies to transform data during Ingestion
+.create function
+with (docstring = 'Ingest raw orders data and calculate the final unit price')
+ParseOrders ()
+{
+bronzeOrders
+| extend UnitFinalPrice = round(UnitPrice * (1-UnitPriceDiscount),2)
+| extend PurchaseDate = todatetime(split(ModifiedDate, " ")[0])
+}
+
+.alter table
+orders 
+policy update @'[{"Source": "bronzeOrders", "Query": "ParseOrders", "IsEnabled" : true, "IsTransactional": true }]'
+
+
+//create clicks and impressions tables
+.create table clicks (clickId: guid, impressionId: guid, clickDate: datetime, productId: int) 
+
+.create table impressions (impressionId: guid, impressionDate: datetime, productId: int, browser: string, browserVersion: real, device: string, source: string, ip_address: string, landing_page: string, page_loading_seconds: real)
+
+
+//create mappings to be used while ingesting events
+.create table impressions ingestion json mapping 'impressions_jsonmapping' '[{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}},{"column":"impressionDate", "Properties":{"Path":"$[\'impressionDate\']"}},{"column":"productId", "Properties":{"Path":"$[\'productId\']"}},{"column":"browser", "Properties":{"Path":"$[\'browser\']"}},{"column":"browserVersion", "Properties":{"Path":"$[\'browserVersion\']"}},{"column":"device", "Properties":{"Path":"$[\'device\']"}},{"column":"source", "Properties":{"Path":"$[\'source\']"}},{"column":"ip_address", "Properties":{"Path":"$[\'ip_address\']"}},{"column":"landing_page", "Properties":{"Path":"$[\'landing_page\']"}},{"column":"page_loading_seconds", "Properties":{"Path":"$[\'page_loading_seconds\']"}}]'
+
+.create table clicks ingestion json mapping 'clicks_jsonmapping' '[{"column":"clickId", "Properties":{"Path":"$[\'clickId\']"}},{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}}, {"column":"clickDate", "Properties":{"Path":"$[\'clickDate\']"}},{"column":"productId", "Properties":{"Path":"$[\'productId\']"}}]'
+
+
+//change batching policy time to 10 seconds to reflect ingestion changes faster
+.alter tables (clicks, impressions, bronzeOrders, orders) policy ingestionbatching
+```
+{
+    "MaximumBatchingTimeSpan" : "00:00:10",
+    "MaximumNumberOfItems" : 20,
+    "MaximumRawDataSizeMB": 300
+}
+```
+
+// use materialized views to view the latest changes in the orders table
+.create async materialized-view with (backfill=true) ordersLatest on table orders
+{
+    orders
+    | summarize arg_max(ModifiedDate, *) by SalesOrderDetailID
+}
+
+
