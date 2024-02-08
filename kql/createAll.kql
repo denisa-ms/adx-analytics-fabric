@@ -4,7 +4,7 @@
 kind=sql
 table=[SalesLT.Product]
 ( 
-   h@'Server=tcp:adxanalytics-dbserver.database.windows.net,1433;Initial Catalog=aworks;User Id=SqlAdmin;Password=ChangeYourAdminPassword1'
+   h@'Server=tcp:<sql server name>.database.windows.net,1433;Initial Catalog=aworks;User Id=SqlAdmin;Password=ChangeYourAdminPassword1'
 )
 with 
 (

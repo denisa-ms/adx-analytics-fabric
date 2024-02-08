@@ -248,7 +248,7 @@
         "id": "535ee10e-e104-4df6-a3eb-ac5cd7834691",
         "name": "storeDB",
         "scopeId": "kusto",
-        "clusterUri": "https://trd-6d5h1jv5ysx81b38zd.z2.kusto.fabric.microsoft.com",
+        "clusterUri": "https://<fabric RTA clustername>.kusto.fabric.microsoft.com",
         "database": "storeDB",
         "kind": "manual-kusto"
       }
