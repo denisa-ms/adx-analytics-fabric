@@ -43,12 +43,12 @@ Built by:
 # The e-commerce store   
 
 The e-commerce store data entities are:  
+* Products: the product catalog.  
+* Orders: the customers orders.  
 * Impressions: event logged when a product is in the search results.
 ![Impressions](assets/store1.png)  
 * Clicks: event logged when the product is clicked and the customer has viewed the details.  
 ![Clicks](assets/store2.png)  
-* Orders: the customers orders.  
-* Products: the product catalog.  
 
 Photo by <a href="https://unsplash.com/@himiwaybikes?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Himiway Bikes</a> on <a href="https://unsplash.com/photos/black-and-gray-motorcycle-parked-beside-brown-wall-Gj5PXw1kM6U?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>  
 Photo by <a href="https://unsplash.com/@headaccessories?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">HEAD Accessories</a> on <a href="https://unsplash.com/photos/silver-and-orange-head-lamp-9uISZprJdXU?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>  
