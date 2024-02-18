@@ -18,7 +18,7 @@ tags: azure, data, analytics, Kusto, bicep, azure data explorer, fabric         
 # Introduction
 Suppose you own an e-commerce website selling bike accessories.  
 You have millions of visitors a month, you want to analyze the website traffic, consumer patterns and predict sales.  
-This workshop will walk you through the process of building an end-to-end Data Analytics Solution for your e-commerce website using MS Fabric Real time Analytics.  
+This workshop will walk you through the process of building an end-to-end Data Analytics Solution in **less than 1 HOUR**, for your e-commerce website using MS Fabric Real time Analytics.  
 
 
 You will learn how to:
