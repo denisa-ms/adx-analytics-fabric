@@ -1,7 +1,7 @@
 # Connect-AzAccount
 # Subscription id of the current subscription
 $subscriptionId=$(az account show --query id --output tsv)
-$resourceGroupName = "adx-fabric-rg1"
+$resourceGroupName = "adx-fabric-rg"
 $location = "westeurope"
 
 

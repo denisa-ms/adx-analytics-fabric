@@ -1,0 +1,388 @@
+{
+    "$schema": "https://msitpbiadx.powerbi.com/static/d/schema/49/dashboard.json",
+    "id": "64841338-93f5-4a78-862f-84ddd5be9010",
+    "eTag": "\"7e196645c9c4481e978e75832925ac73\"",
+    "schema_version": "49",
+    "title": "analytics RTA dashboard",
+    "autoRefresh": {
+        "enabled": true,
+        "minInterval": "30s"
+    },
+    "baseQueries": [],
+    "tiles": [
+        {
+            "id": "356b6084-d7e3-47e5-a9a8-c4869058b648",
+            "title": "Clicks by date",
+            "description": "",
+            "visualType": "line",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 0,
+                "y": 0,
+                "width": 9,
+                "height": 8
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "clicks\n| where clickDate between (_startTime.._endTime)\n| summarize date_count = count() by bin(clickDate, 1d)\n| render timechart \n| top 30 by date_count\n"
+            },
+            "visualOptions": {
+                "multipleYAxes": {
+                    "base": {
+                        "id": "-1",
+                        "label": "",
+                        "columns": [],
+                        "yAxisMaximumValue": null,
+                        "yAxisMinimumValue": null,
+                        "yAxisScale": "linear",
+                        "horizontalLines": []
+                    },
+                    "additional": [],
+                    "showMultiplePanels": false
+                },
+                "hideLegend": false,
+                "xColumnTitle": "",
+                "xColumn": null,
+                "yColumns": [
+                    "clickDate"
+                ],
+                "seriesColumns": null,
+                "xAxisScale": "linear",
+                "verticalLine": "",
+                "crossFilterDisabled": false,
+                "drillthroughDisabled": false,
+                "crossFilter": [],
+                "drillthrough": []
+            }
+        },
+        {
+            "id": "fe3968ef-d1a1-4203-bda5-a14476073c4f",
+            "title": "CTR",
+            "description": "",
+            "visualType": "column",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 9,
+                "y": 0,
+                "width": 9,
+                "height": 8
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "\n// ctr\nlet imp = \nimpressions\n| where impressionDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(impressionDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\nlet clck = \nclicks\n| where clickDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(clickDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\nimp \n| join clck on $left.dateOnly == $right.dateOnly\n| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count\n"
+            },
+            "visualOptions": {
+                "multipleYAxes": {
+                    "base": {
+                        "id": "-1",
+                        "label": "",
+                        "columns": [],
+                        "yAxisMaximumValue": null,
+                        "yAxisMinimumValue": null,
+                        "yAxisScale": "linear",
+                        "horizontalLines": []
+                    },
+                    "additional": [],
+                    "showMultiplePanels": false
+                },
+                "hideLegend": false,
+                "xColumnTitle": "",
+                "xColumn": "selected_date",
+                "yColumns": [
+                    "CTR"
+                ],
+                "seriesColumns": null,
+                "xAxisScale": "linear",
+                "verticalLine": "",
+                "crossFilterDisabled": false,
+                "drillthroughDisabled": false,
+                "crossFilter": [],
+                "drillthrough": []
+            }
+        },
+        {
+            "id": "a0a43117-56bd-4786-8272-f9fbc6b83f3b",
+            "title": "Impressions by location",
+            "description": "",
+            "visualType": "map",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 0,
+                "y": 8,
+                "width": 18,
+                "height": 15
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| join external_table('products') on $left.productId == $right.ProductID\n| project lon = geo_info_from_ip_address(ip_address).longitude, lat = geo_info_from_ip_address(ip_address).latitude, Name\n| render scatterchart with (kind = map)\n\n"
+            },
+            "visualOptions": {
+                "map__type": "bubble",
+                "map__latitudeColumn": "lat",
+                "map__longitudeColumn": "lon",
+                "map__labelColumn": "Name",
+                "map__sizeColumn": null,
+                "map__sizeDisabled": true,
+                "map__geoType": "numeric",
+                "map__geoPointColumn": null
+            }
+        },
+        {
+            "id": "11326671-1e6b-4c02-b658-4709cd28754f",
+            "title": "Total Impressions",
+            "description": "",
+            "visualType": "card",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 18,
+                "y": 8,
+                "width": 6,
+                "height": 5
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(impressionDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\n\n"
+            },
+            "visualOptions": {
+                "multiStat__textSize": "large",
+                "multiStat__valueColumn": null,
+                "colorRulesDisabled": true,
+                "colorRules": [],
+                "colorStyle": "light"
+            }
+        },
+        {
+            "id": "560481b3-1236-442c-903b-21bd86dc000a",
+            "title": "Total Clicks",
+            "description": "",
+            "visualType": "card",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 18,
+                "y": 13,
+                "width": 6,
+                "height": 5
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "clicks\n| where clickDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(clickDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\n"
+            },
+            "visualOptions": {
+                "multiStat__textSize": "large",
+                "multiStat__valueColumn": null,
+                "colorRulesDisabled": true,
+                "colorRules": [],
+                "colorStyle": "light"
+            }
+        },
+        {
+            "id": "75b1e301-7da8-4dd5-a312-bcd239a4ab51",
+            "title": "CTR",
+            "description": "",
+            "visualType": "card",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 18,
+                "y": 18,
+                "width": 6,
+                "height": 4
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "let imp = \nimpressions\n| where impressionDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(impressionDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\nlet clck = \nclicks\n| where clickDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(clickDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\nimp \n| join clck on $left.dateOnly == $right.dateOnly\n| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count\n"
+            },
+            "visualOptions": {
+                "multiStat__textSize": "large",
+                "multiStat__valueColumn": "CTR",
+                "colorRulesDisabled": true,
+                "colorRules": [],
+                "colorStyle": "light"
+            }
+        },
+        {
+            "id": "0a67c404-b495-4432-8da1-672c0e86b7bf",
+            "title": "Average page loading time",
+            "description": "",
+            "visualType": "line",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 18,
+                "y": 0,
+                "width": 6,
+                "height": 4
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| summarize date_count = avg(page_loading_seconds) by bin(impressionDate, 1d)\n\n"
+            },
+            "visualOptions": {
+                "multipleYAxes": {
+                    "base": {
+                        "id": "-1",
+                        "label": "",
+                        "columns": [],
+                        "yAxisMaximumValue": null,
+                        "yAxisMinimumValue": null,
+                        "yAxisScale": "linear",
+                        "horizontalLines": []
+                    },
+                    "additional": [],
+                    "showMultiplePanels": false
+                },
+                "hideLegend": false,
+                "xColumnTitle": "",
+                "xColumn": null,
+                "yColumns": null,
+                "seriesColumns": null,
+                "xAxisScale": "linear",
+                "verticalLine": "",
+                "crossFilterDisabled": false,
+                "drillthroughDisabled": false,
+                "crossFilter": [],
+                "drillthrough": []
+            }
+        },
+        {
+            "id": "38663ba2-24eb-4474-addc-856dad5602ba",
+            "title": "Max page loading time",
+            "description": "",
+            "visualType": "line",
+            "pageId": "c0c2038f-1379-4b93-908b-3df44e054571",
+            "layout": {
+                "x": 18,
+                "y": 4,
+                "width": 6,
+                "height": 4
+            },
+            "query": {
+                "kind": "inline",
+                "dataSource": {
+                    "kind": "inline",
+                    "dataSourceId": "aa9511ff-57a8-4e42-aa58-988fca974be5"
+                },
+                "usedVariables": [
+                    "_endTime",
+                    "_startTime"
+                ],
+                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| summarize max_loading_time = max(page_loading_seconds) by bin(impressionDate, 1d)\n\n"
+            },
+            "visualOptions": {
+                "multipleYAxes": {
+                    "base": {
+                        "id": "-1",
+                        "label": "",
+                        "columns": [],
+                        "yAxisMaximumValue": null,
+                        "yAxisMinimumValue": null,
+                        "yAxisScale": "linear",
+                        "horizontalLines": []
+                    },
+                    "additional": [],
+                    "showMultiplePanels": false
+                },
+                "hideLegend": false,
+                "xColumnTitle": "",
+                "xColumn": null,
+                "yColumns": null,
+                "seriesColumns": null,
+                "xAxisScale": "linear",
+                "verticalLine": "",
+                "crossFilterDisabled": false,
+                "drillthroughDisabled": false,
+                "crossFilter": [],
+                "drillthrough": []
+            }
+        }
+    ],
+    "parameters": [
+        {
+            "kind": "duration",
+            "id": "d03368c6-343e-4f7c-abe9-b7a18f4d740e",
+            "displayName": "Time range",
+            "description": "",
+            "beginVariableName": "_startTime",
+            "endVariableName": "_endTime",
+            "defaultValue": {
+                "kind": "dynamic",
+                "count": 1,
+                "unit": "hours"
+            },
+            "showOnPages": {
+                "kind": "all"
+            }
+        }
+    ],
+    "dataSources": [
+        {
+            "id": "aa9511ff-57a8-4e42-aa58-988fca974be5",
+            "name": "RTA_analytics_demo_kqldb",
+            "scopeId": "kusto-trident",
+            "kind": "kusto-trident",
+            "clusterUri": "https://trd-6d5h1jv5ysx81b38zd.z2.kusto.fabric.microsoft.com",
+            "workspace": "a5ffff48-2f89-4188-a99b-f88de16ed5d7",
+            "database": "003f94eb-093e-44df-a2af-c6650905a603"
+        }
+    ],
+    "pages": [
+        {
+            "name": "Page 1",
+            "id": "c0c2038f-1379-4b93-908b-3df44e054571"
+        }
+    ]
+}

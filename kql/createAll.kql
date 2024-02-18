@@ -36,18 +36,11 @@ policy update @'[{"Source": "bronzeOrders", "Query": "ParseOrders", "IsEnabled" 
 
 .create table impressions (impressionId: guid, impressionDate: datetime, productId: int, browser: string, browserVersion: real, device: string, source: string, ip_address: string, landing_page: string, page_loading_seconds: real)
 
-.create table impressionsToOrders (impressionId: guid, salesOrderId: long, salesOrderDetailId: long)   
-
-.create table productRecommendations (productId1: long, productId2: long, jaccard_similarity: real)
 
 //create mappings to be used while ingesting events
 .create table impressions ingestion json mapping 'impressions_jsonmapping' '[{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}},{"column":"impressionDate", "Properties":{"Path":"$[\'impressionDate\']"}},{"column":"productId", "Properties":{"Path":"$[\'productId\']"}},{"column":"browser", "Properties":{"Path":"$[\'browser\']"}},{"column":"browserVersion", "Properties":{"Path":"$[\'browserVersion\']"}},{"column":"device", "Properties":{"Path":"$[\'device\']"}},{"column":"source", "Properties":{"Path":"$[\'source\']"}},{"column":"ip_address", "Properties":{"Path":"$[\'ip_address\']"}},{"column":"landing_page", "Properties":{"Path":"$[\'landing_page\']"}},{"column":"page_loading_seconds", "Properties":{"Path":"$[\'page_loading_seconds\']"}}]'
 
 .create table clicks ingestion json mapping 'clicks_jsonmapping' '[{"column":"clickId", "Properties":{"Path":"$[\'clickId\']"}},{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}}, {"column":"clickDate", "Properties":{"Path":"$[\'clickDate\']"}},{"column":"productId", "Properties":{"Path":"$[\'productId\']"}}]'
-
-.create table impressionsToOrders ingestion json mapping 'impressionsToOrders_jsonmapping' '[{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}},{"column":"salesOrderId", "Properties":{"Path":"$[\'salesOrderId\']"}},{"column":"salesOrderDetailId", "Properties":{"Path":"$[\'salesOrderDetailId\']"}}]'
-
-.create table productRecommendations ingestion json mapping 'productRecommendations_jsonmapping' '[{"column":"productId1", "Properties":{"Path":"$[\'productId1\']"}},{"column":"productId2", "Properties":{"Path":"$[\'productId2\']"}},{"column":"jaccard_similarity", "Properties":{"Path":"$[\'jaccard_similarity\']"}}]'
 
 //change batching policy time to 10 seconds to reflect ingestion changes faster
 .alter tables (clicks, impressions, impressionsToOrders, productRecommendations, bronzeOrders, orders) policy ingestionbatching

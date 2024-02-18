@@ -18,7 +18,8 @@ tags: azure, data, analytics, Kusto, bicep, azure data explorer, fabric         
 # Introduction
 Suppose you own an e-commerce website selling bike accessories.  
 You have millions of visitors a month, you want to analyze the website traffic, consumer patterns and predict sales.  
-This workshop will walk you through the process of building an end-to-end Data Analytics Solution for your e-commerce website using MS Fabric Real time Analytics.
+This workshop will walk you through the process of building an end-to-end Data Analytics Solution for your e-commerce website using MS Fabric Real time Analytics.  
+
 
 You will learn how to:
 * Build a star schema in MS Fabric RTA (Real time analytics)
@@ -30,24 +31,22 @@ You will learn how to:
 All the code in this tutorial can be found here:   
 [ADX Analytics github repo](<https://github.com/denisa-ms/adx-analytics-fabric>)  
 
+---
+
+# The e-commerce store   
+
+The e-commerce store data entities are:  
+* Impressions: event logged when a product is in the search results.
+![Impressions](assets/store1.png)  
+* Clicks: event logged when the product is clicked and the customer has viewed the details.  
+![Clicks](assets/store2.png)  
+* Orders: the customers orders.  
+* Products: the product catalog.  
 
 ---
 
-# Architecture   
+ # Architecture
 
-At the end of this tutorial we will have the following entities:  
-* An SQL server with the Adventure works sample DB
-* An event hub with 2 hubs: clicks and impressions that will receive the events we will generate as streaming data.   
-* Fabric KQL DB
-* Fabric Lakehouse
-* Fabric Data Pipeline
-* Fabric Event streams for ingesting clicks and impressions events from Event hub into our KQL DB
-* Fabric Notebooks for synthetic data generation (event streaming)
-* Fabric Real time Dashboard for visualization  
-  
-![Deployed resources](assets/infra1.png)
-
-## Architectural Diagram
 ![Architectural Diagram](assets/architecture.png)
 
 ---
@@ -73,233 +72,165 @@ We are showcasing many of Fabric RTA capabilities:
 
 ---
 
+# Data schema
+
+* **Products**: shortcut to an external table in the SQL DB.   
+* **BronzeOrders**: raw data for the orders, copied to Fabric KQL DB using CDC using Fabric Data pipelines.
+* **Orders**: table created based on an update policy with transformed data.  
+* **OrdersLatest**: materialized view showing only the latest change in the order record.  
+* **Impressions**: streaming events representing the product being seen by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.  
+* **Clicks**: streaming events representing the product being clicked by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.   
+
+![MRD](assets/mrd.png)  
+
+---
+
+# Resources to be created 
+
+At the end of this tutorial we will have the following entities:  
+* An SQL server with the Adventure works sample DB (aka: the operational DB for our e-commerce store).  
+* An event hub with 2 hubs: **clicks** and **impressions** streaming the events we will generate.   
+* Fabric KQL DB
+* Fabric Lakehouse
+* Fabric Data Pipeline
+* Fabric Event streams for ingesting clicks and impressions events from Event hub into our KQL DB
+* Fabric Notebooks for synthetic data generation (event streaming)
+* Fabric Real time Dashboard for visualization  
+  
+![Deployed resources](assets/infra4.png)
+
+---
+
 # Pre-requisites
-* An [Azure Subscription](<https://azure.microsoft.com/en-us/free/>) where you have admin permissions
-* [Microsoft Fabric] (<https://www.microsoft.com/en-us/microsoft-fabric/getting-started>)
+* An [Azure Subscription](<https://azure.microsoft.com/en-us/free/>) where you have admin permissions.   
+* [Microsoft Fabric](<https://www.microsoft.com/en-us/microsoft-fabric/getting-started>) with admin permissions.   
 
 ---
 
 # Building the Infrastructure
 Run powershell script in the Azure portal - Cloudshell
 
-1. Go to the azure portal and login with a user that has administrator permissions
-2. Open the cloud shell in the azure portal
-3. Upload the file called ([createAll](<../infrastructure scripts/createAll.ps1>)) in the github repo by using the upload file button in the cloud shell
-4. Run 
+1. Go to the azure portal and login with a user that has **administrator permissions**.  
+2. Open the cloud shell in the azure portal.  
+3. Upload the file called ([createAll.ps1](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/createAll.ps1>)) in the github repo by using the upload file button in the cloud shell.  
+4. Upload the file called ([deployAll.bicep](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/deployAll.bicep>)) in the github repo by using the upload file button in the cloud shell.  
+5. Run in cloudShell:  
 ```
 ./createAll.ps1   
 ```  
-
 
 <div class="info" data-title="Note">
 
 > This takes time, so be patient 
 </div>
 
-![Alt text](assets/deploy1.png)
-![Alt text](assets/deploy2.png)
-![Alt text](assets/deploy3.png)
-![Alt text](assets/deploy4.png)
+![Alt text](assets/infra1.png)
+![Alt text](assets/infra2.png)
+![Alt text](assets/infra3.png)
+![Alt text](assets/infra4.png)
+
 
 ---
- 
+
+
 # KQL Database schema  
 ![MRD](assets/mrd.png)
 
-You can review all the commands used to create external tables, update policies, materialized views and mappings for ingestion in the [KQL script](<https://github.com/denisa-ms/ADX-Analytics/blob/main/infrastructure%20scripts/script.kql>) file.  
- This is the script we run in the deployment after creating the Kusto cluster.
-
 ---
 
-# Post deployment tasks
-## Define the event hub SAS (shared access policy) in [.env](https://github.com/denisa-ms/ADX-Analytics/blob/main/.env.template) file
 
-<div class="task" data-title="Task">
-
-> * Go to the Event hub -> Shared access policies  
-> * Add  
-> * Create a Policy called "adxdemo" with "Manage" privileges  
-> * Save and copy the "Connection string–primary key"  
-> * Paste into [.env](https://github.com/denisa-ms/ADX-Analytics/blob/main/.env.template) file the event hub connection string   
-```
-EVENT_HUB_CONN_STRING = "<event hub connection string>"   
-```
-</code>
-
-
-![event hub](assets/eventhub1.png)
-![sas](assets/eventhub2.png)
-![createsas](assets/eventhub3.png)
-
-<br />
-
-## Open Azure Data Studio and connect to our SQL DB
-![Alt text](assets/sql1.png)  
+# Post deployment tasks  
 
 <div class="info" data-title="Note">
 
 > Since we are using SQL serverless, this step is used to "awake" our SQL server
 </div>
 
-## Open Azure Data Factory to run the Change Data Capture
-In this step we "stream" all the orders from the "SalesOrderDetail" table in SQL to Kusto
-
-<div class="task" data-title="Task">
-
-> Go to the Azure Data Factory in the Created Resource Group
-> Launch the ADF Studio
-> Author -> Pipelines -> "SQLToADX_orders"
-> Click on "debug"
-</div>
-
-![Alt text](assets/adf1.png)
-![Alt text](assets/adf3.png)
-![Alt text](assets/adf4.png)
-
-## Create synthetic events by running a Notebook
-<div class="task" data-title="Task">
-
-> * Follow the instructions in the [README file](https://github.com/denisa-ms/ADX-Analytics/blob/main/notebooks/README.md) located in the [notebooks](https://github.com/denisa-ms/ADX-Analytics/blob/main/notebooks) folder for creating a python virtual environment  
-> * Run [Generate Synthetic events notebook](<https://github.com/denisa-ms/ADX-Analytics/blob/main/notebooks/Generate%20synthetic%20events%20.ipynb>)
-</div>
-
-## Generate updates on the SQL SalesOrderDetail table
-<div class="task" data-title="Task">
-
-> * If you did not create a python virtual environment yet, Follow the instructions in the [README file](notebooks/README.md) located in the [notebooks](https://github.com/denisa-ms/ADX-Analytics/blob/main/notebooks) folder for creating a python virtual environment  
-> * Run [Generate orders updates notebook](<https://github.com/denisa-ms/ADX-Analytics/blob/main/notebooks/Generate%20orders%20updates.ipynb>)  
-> * Run the CDC pipeline in Azure Data Factory to send the changes from SQL to Kusto (see [Open Azure Data Factory to run the Change Data Capture (CDC)](#open-azure-data-factory-to-run-the-change-data-capture) above  
-</div>
-
----
-
-# Read data in Kusto
-Your Kusto DB should look like this:  
-![Alt text](assets/kql1.png)
-<br />
-
-- Copy all KQL queries from the [exercise1.kql](https://github.com/denisa-ms/ADX-Analytics/blob/main/KQL/exercise1.kql) file to the Azure Data Explorer Web UI and run queries one by one.
-
-<br />
-
-![Alt text](assets/kql2.png)
-<br />
-
----
-
-# Visualization in Azure Data Explorer web UI  
-
-<div class="task" data-title="Important">
-
-> If you changed the "prefix" param in the [deployAll.bicep](<https://github.com/denisa-ms/ADX-Analytics/blob/main/infrastructure%20scripts/deployAll.bicep>) file  
-> You have to edit the [JSON defining the ADX WEB UI Dashboard data source](<https://github.com/denisa-ms/ADX-Analytics/blob/main/ADX%20dashboards/dashboard-Ecommerce%20dashboard.json>) as follows:  
-
-```
-    "dataSources": [
-      {
-        "id": "535ee10e-e104-4df6-a3eb-ac5cd7834691",
-        "name": "storeDB",
-        "scopeId": "kusto",
-        "clusterUri": "https://prefix-kusto.westeurope.kusto.windows.net/",
-        "database": "storeDB",
-        "kind": "manual-kusto"
-      }
-    ],
-```
-<br />
-</div> 
-
-Import the dashboard as follows:
-![Alt text](assets/dashboard1.png)
-![Alt text](assets/dashboard2.png)
-<br />
-
----
-
-# Visualization and alerts in Grafana
-Import the dashboard into Grafana as follows:
-
-![Open grafana](assets/grafana1.png)
-![Open grafana](assets/grafana5.png)
-![Open grafana](assets/grafana6.png)
-![Open grafana](assets/grafana7.png)
-![Open grafana](assets/grafana8.png)
-![Open grafana](assets/grafana9.png)
-![Open grafana](assets/grafana2.png)
-![Open grafana](assets/grafana3.png)
-![Open grafana](assets/grafana4.png)
-![Open grafana](assets/grafana10.png)
-
-<br />
-
----
-
-# Visualization in Power BI
-
-## Open the Power BI template provided in this demo to read from Azure Data Explorer
-
-![power BI](assets/pbi6.png)
-![power BI](assets/pbi7.png)
-![power BI](assets/pbi8.png)
-![power BI](assets/pbi9.png)
-![power BI](assets/pbi10.png)
-
-## Create a new Power BI report
-
-![power BI](assets/pbi1.png)
-![power BI](assets/pbi2.png)
-![power BI](assets/pbi3.png)
-![power BI](assets/pbi4.png)
-![power BI](assets/pbi5.png)
-
-For more instructions:
-[Use Azure Data Explorer data in Power BI](<https://learn.microsoft.com/en-us/azure/data-explorer/power-bi-data-connector?tabs=web-ui>)
-
----
-
-# Alerts in Azure Data Explorer
-
-You have 3 options to create alerts on Azure data Explorer:  
-## Azure Logs (Preview)
-
-Azure Monitor Alerts allow you to monitor your Azure and application telemetry to quickly identify issues affecting your service. The Azure Monitor alerts is introducing now support for running queries on Azure Data Explorer (ADX) tables, and even joining data between ADX and data in Log Analytics and Application Insights. 
-As part of this newly added support, log alert rules now support managed identities for Azure resources – allowing you to see and control the exact permissions of your log alert rule. 
-
-To write queries to Log Search Alerts (LSA) you need to use the ADX(‘<cluster url>’) pattern.   
-Learn more:  
-![Alerts in Azure Logs](assets/alerts1.png)
-
-## Power automate
-The Azure Data Explorer connector for Power Automate (previously Microsoft Flow) enables you to orchestrate and schedule flows, send notifications, and alerts, as part of a scheduled or triggered task.  
-For more information: [Azure Data Explorer connector for Microsoft Power Automate](<https://learn.microsoft.com/en-us/azure/data-explorer/flow>)
-
-## Alerts in Grafana  
-Grafana is an analytics platform where you can query and visualize data, and then create and share dashboards based on your visualizations. Grafana provides an Azure Data Explorer plug-in, which enables you to connect to and visualize data from Azure Data Explorer. The plug-in works with both Azure Managed Grafana and self-hosted Grafana.  
-
-For more information: [Create alerts in Grafana](<https://learn.microsoft.com/en-us/azure/data-explorer/grafana?tabs=azure-managed-grafana#create-alerts>)  
+Open Azure Data Studio and connect to our SQL DB.  
+![SQL DB](assets/sql1.png)  
 
 
 ---
 
-# Additional Information
-
-## Monitoring 
- Azure Monitor diagnostic logs provide data about the operation of Azure resources.  
- Azure Data Explorer uses diagnostic logs for insights on ingestion, commands, query, and tables.  
- You can export operation logs to Azure Storage, event hub, or Log Analytics to monitor ingestion, commands, and query status.  
- Logs from Azure Storage and Azure Event Hubs can be routed to a table in your Azure Data Explorer cluster for further analysis.
-
-[Setup diagnostic logs](<https://learn.microsoft.com/en-us/azure/data-explorer/using-diagnostic-logs?tabs=ingestion>)  
-[Create an Azure alert on FailedIngestion table](<https://learn.microsoft.com/en-us/azure/azure-monitor/alerts/tutorial-log-alert>)
-
-
-## Connecting to Azure Data Explorer  
-[How to configure an app registration to connect to Azure Data Explorer](https://learn.microsoft.com/en-us/azure/data-explorer/provision-entra-id-app)  
-
-* Adding an AAD user from another tenant to access from PBI to ADX   
-.add database ['storeDB'] admins ("aaduser=user@yourdomain.com;your aad tenant id here")  
-
-* Adding an AAD app to ADX as admin + run the following command inside ADX    
-.add database ['your db name'] users ('aadapp=your app-id') 'Demo app put your comment here (AAD)'   
-
-
+# Building the Analytics platform
+* Create a Fabric Workspace
+![alt text](assets/fabric1.png)
+![alt text](assets/fabric2.png)
+* Create a KQL DB - this is our analytics DB
+![alt text](assets/fabric3.png)
+![alt text](assets/fabric4.png)
+* Go to the github repo for this tutorial and copy the KQL commands in the file:  
+[KQL script](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/kql/createAll.kql>)
+![alt text](assets/fabric5.png)
+* Paste them in the KQL DB data explore pane
+![alt text](assets/fabric6.png)
+* Go to the Azure portal and copy the sql servername we created in the deployment scripts  
+![alt text](assets/fabric5-1.png)
+* Paste it in the KQL DB data explore pane for the external table creation  
+![alt text](assets/fabric6-1.png)
+* Run all commands in the KQL DB data explore pane one by one to create all the tables, update policies and materialized views  
+![alt text](assets/fabric7.png)
+* Create a Data pipeline to copy the data from the SQL DB orders table to our KQL DB using CDC
+![alt text](assets/fabric8.png)
+![alt text](assets/fabric9.png)
+![alt text](assets/fabric10.png)
+![alt text](assets/fabric11.png)
+![alt text](assets/fabric12.png)
+![alt text](assets/fabric13.png)
+![alt text](assets/fabric14.png)
+![alt text](assets/fabric15.png)
+![alt text](assets/fabric16.png)
+![alt text](assets/fabric17.png)
+![alt text](assets/fabric18.png)
+* Run a KQL command to check the orders were copied into our KQL DB
+![alt text](assets/fabric19.png)
+* Import the notebooks to generate sytnetic data from the githup repo here:  
+[Notebooks](<https://github.com/denisa-ms/adx-analytics-fabric/tree/main/notebooks>)
+![alt text](assets/fabric20.png)
+![alt text](assets/fabric21.png)
+![alt text](assets/fabric22.png)
+![alt text](assets/fabric22-1.png)
+* In order for the notebooks to run, we will create an environment with the imported python libraries to be used when running the notebooks.
+![alt text](assets/fabric25.png)
+![alt text](assets/fabric27.png)
+![alt text](assets/fabric28.png)
+* Connect the Notebook to the created environment
+![alt text](assets/fabric28-1.png)
+![alt text](assets/fabric28-2.png)
+* Go to the azure portal and create a shared access policy for the event hub created in the deployment and copy it
+![alt text](assets/fabric28-3.png)
+* Paste the event hub connection string into the notebook to generate synthetic events
+![alt text](assets/fabric28-4.png)
+* Run the notebook's cells to generate "fake" impressions and clicks events and stream them to our event hubs
+![alt text](assets/fabric28-5.png)
+* Create an eventstream to stream events from event hub to our KQL DB
+![alt text](assets/fabric30.png)
+![alt text](assets/fabric31.png)
+![alt text](assets/fabric32.png)
+![alt text](assets/fabric33.png)
+![alt text](assets/fabric34.png)
+![alt text](assets/fabric35.png)
+![alt text](assets/fabric36.png)
+![alt text](assets/fabric37.png)
+![alt text](assets/fabric38.png)
+![alt text](assets/fabric39.png)
+![alt text](assets/fabric40.png)
+![alt text](assets/fabric41.png)
+![alt text](assets/fabric42.png)
+![alt text](assets/fabric43.png)
+![alt text](assets/fabric44.png)
+* Run a KQL query to check the incoming events in the clicks table
+![alt text](assets/fabric45.png)
+* Download the JSON file defining the dashboard located at [RTA Dashboard](<https://github.com/denisa-ms/adx-analytics-fabric/tree/main/notebooks>)
+* Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard
+![alt text](assets/fabric45-1.png)
+* Create a Real time analytics Dashboard to visualize the data
+![alt text](assets/fabric46.png)
+![alt text](assets/fabric47.png)
+![alt text](assets/fabric48.png)
+![alt text](assets/fabric49.png)
+![alt text](assets/fabric50.png)
+![alt text](assets/fabric51.png)
+![alt text](assets/fabric52.png)
+![alt text](assets/fabric53.png)
+![alt text](assets/fabric54.png)
