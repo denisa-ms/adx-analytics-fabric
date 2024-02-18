@@ -153,24 +153,27 @@ Open Azure Data Studio and connect to our SQL DB.
 ---
 
 # Building the Analytics platform
-* Create a Fabric Workspace
+## Fabric Workspace 
+Create a Fabric Workspace
 ![alt text](assets/fabric1.png)
 ![alt text](assets/fabric2.png)
-* Create a KQL DB - this is our analytics DB
+## KQL DB
+Create a KQL DB - this is our analytics DB
 ![alt text](assets/fabric3.png)
 ![alt text](assets/fabric4.png)
-* Go to the github repo for this tutorial and copy the KQL commands in the file:  
+Go to the github repo for this tutorial and copy the KQL commands in the file:  
 [KQL script](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/kql/createAll.kql>)
 ![alt text](assets/fabric5.png)
-* Paste them in the KQL DB data explore pane
+Paste them in the KQL DB data explore pane
 ![alt text](assets/fabric6.png)
-* Go to the Azure portal and copy the sql servername we created in the deployment scripts  
+Go to the Azure portal and copy the sql servername we created in the deployment scripts  
 ![alt text](assets/fabric5-1.png)
-* Paste it in the KQL DB data explore pane for the external table creation  
+Paste it in the KQL DB data explore pane for the external table creation  
 ![alt text](assets/fabric6-1.png)
-* Run all commands in the KQL DB data explore pane one by one to create all the tables, update policies and materialized views  
+Run all commands in the KQL DB data explore pane one by one to create all the tables, update policies and materialized views  
 ![alt text](assets/fabric7.png)
-* Create a Data pipeline to copy the data from the SQL DB orders table to our KQL DB using CDC
+## Data pipeline
+Create a Data pipeline to copy the data from the SQL DB orders table to our KQL DB using CDC
 ![alt text](assets/fabric8.png)
 ![alt text](assets/fabric9.png)
 ![alt text](assets/fabric10.png)
@@ -182,28 +185,30 @@ Open Azure Data Studio and connect to our SQL DB.
 ![alt text](assets/fabric16.png)
 ![alt text](assets/fabric17.png)
 ![alt text](assets/fabric18.png)
-* Run a KQL command to check the orders were copied into our KQL DB
+Run a KQL command to check the orders were copied into our KQL DB
 ![alt text](assets/fabric19.png)
-* Import the notebooks to generate sytnetic data from the githup repo here:  
+## Notebooks
+Import the notebooks to generate sytnetic data from the githup repo here:  
 [Notebooks](<https://github.com/denisa-ms/adx-analytics-fabric/tree/main/notebooks>)
 ![alt text](assets/fabric20.png)
 ![alt text](assets/fabric21.png)
 ![alt text](assets/fabric22.png)
 ![alt text](assets/fabric22-1.png)
-* In order for the notebooks to run, we will create an environment with the imported python libraries to be used when running the notebooks.
+In order for the notebooks to run, we will create an environment with the imported python libraries to be used when running the notebooks.
 ![alt text](assets/fabric25.png)
 ![alt text](assets/fabric27.png)
 ![alt text](assets/fabric28.png)
-* Connect the Notebook to the created environment
+Connect the Notebook to the created environment
 ![alt text](assets/fabric28-1.png)
 ![alt text](assets/fabric28-2.png)
-* Go to the azure portal and create a shared access policy for the event hub created in the deployment and copy it
+Go to the azure portal and create a shared access policy for the event hub created in the deployment and copy it
 ![alt text](assets/fabric28-3.png)
-* Paste the event hub connection string into the notebook to generate synthetic events
+Paste the event hub connection string into the notebook to generate synthetic events
 ![alt text](assets/fabric28-4.png)
-* Run the notebook's cells to generate "fake" impressions and clicks events and stream them to our event hubs
+Run the notebook's cells to generate "fake" impressions and clicks events and stream them to our event hubs
 ![alt text](assets/fabric28-5.png)
-* Create an eventstream to stream events from event hub to our KQL DB
+## Eventstream 
+Create an eventstream to stream events from event hub to our KQL DB
 ![alt text](assets/fabric30.png)
 ![alt text](assets/fabric31.png)
 ![alt text](assets/fabric32.png)
@@ -219,18 +224,22 @@ Open Azure Data Studio and connect to our SQL DB.
 ![alt text](assets/fabric42.png)
 ![alt text](assets/fabric43.png)
 ![alt text](assets/fabric44.png)
-* Run a KQL query to check the incoming events in the clicks table
+Run a KQL query to check the incoming events in the clicks table
 ![alt text](assets/fabric45.png)
-* Download the JSON file defining the dashboard located at [RTA Dashboard](<https://github.com/denisa-ms/adx-analytics-fabric/tree/main/notebooks>)
-* Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard
+## Dashboard
+Download the JSON file defining the dashboard located at [RTA Dashboard](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/dashboards/dashboard-analytics%20RTA%20dashboard.json>)
+Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard, save the file  
 ![alt text](assets/fabric45-1.png)
-* Create a Real time analytics Dashboard to visualize the data
+![alt text](assets/fabric45-2.png)
+![alt text](assets/fabric45-3.png)
+Create a Real time analytics Dashboard to visualize the data
 ![alt text](assets/fabric46.png)
 ![alt text](assets/fabric47.png)
 ![alt text](assets/fabric48.png)
 ![alt text](assets/fabric49.png)
 ![alt text](assets/fabric50.png)
-![alt text](assets/fabric51.png)
-![alt text](assets/fabric52.png)
-![alt text](assets/fabric53.png)
+Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
 ![alt text](assets/fabric54.png)
+Stop running the notebook
+![alt text](assets/fabric55.png)
+
