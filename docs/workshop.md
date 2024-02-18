@@ -31,12 +31,11 @@ You will learn how to:
 All the code in this tutorial can be found here:   
 [ADX Analytics github repo](<https://github.com/denisa-ms/adx-analytics-fabric>)  
 
-Built by: 
-Denise Schlesinger
-Principal Cloud Solution Architect @Microsoft
-[Linkedin](<https://www.linkedin.com/in/deniseschlesinger/>) 
-[Github](<https://github.com/denisa-ms>) 
-
+**Built by:**   
+**Denise Schlesinger**  
+**Principal Cloud Solution Architect @Microsoft**  
+[Linkedin](<https://www.linkedin.com/in/deniseschlesinger/>)   
+[Github](<https://github.com/denisa-ms>)
 
 ---
 
