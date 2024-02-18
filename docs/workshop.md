@@ -38,8 +38,6 @@ Built by:
 [Linkedin](<https://www.linkedin.com/in/deniseschlesinger/>)     
 [Github](<https://github.com/denisa-ms>)
 
-
-
 ---
 
 # The e-commerce store   
