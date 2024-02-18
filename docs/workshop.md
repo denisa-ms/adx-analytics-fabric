@@ -37,6 +37,8 @@ All the code in this tutorial can be found here:
 [Linkedin](<https://www.linkedin.com/in/deniseschlesinger/>)     
 [Github](<https://github.com/denisa-ms>)
 
+
+
 ---
 
 # The e-commerce store   
