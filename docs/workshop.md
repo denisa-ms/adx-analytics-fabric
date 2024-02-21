@@ -40,6 +40,31 @@ Built by:
 
 ---
 
+# Fabric Real time analytics features 
+
+We are showcasing many of Fabric RTA capabilities:  
+* One logical copy - 
+
+* JSON dynamic fields
+
+* [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>)   
+  Products table: defined as an external table hosted in our operational SQL DB. 
+  A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
+
+* [Event streams](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/event-streams/overview>)  ingest-data-overview#continuous-data-ingestion>)   
+  Clicks and Impressions tables: are ingested from Azure Event Hub using event streams  
+
+* [Data pipelines](<https://learn.microsoft.com/en-us/fabric/data-factory/tutorial-end-to-end-pipeline>)  
+  BronzeOrders table is populated by a Fabric Data pipeline using CDC (change data capture) from our operational SQL DB  
+
+* [Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
+  Orders table: created on ingestion based on Kusto's update policies feature, that allows appending rows to a target table by applying transformations to a source table.  
+
+* [Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
+  OrdersLatest table: materialized view - exposes an aggregation over a table or other materialized view  
+
+---
+
 # The e-commerce store   
 
 The e-commerce store data entities are:  
@@ -61,26 +86,6 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 
 ![Architectural Diagram](assets/architecture.png)
 
----
-
-# Fabric RTA Features 
-
-We are showcasing many of Fabric RTA capabilities:  
-* [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>)   
-  Products table: defined as an external table hosted in our operational SQL DB. 
-  A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
-
-* [Event streams](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/event-streams/overview>)  ingest-data-overview#continuous-data-ingestion>)   
-  Clicks and Impressions tables: are ingested from Azure Event Hub using event streams  
-
-* [Data pipelines](<https://learn.microsoft.com/en-us/fabric/data-factory/tutorial-end-to-end-pipeline>)  
-  BronzeOrders table is populated by a Fabric Data pipeline using CDC (change data capture) from our operational SQL DB  
-
-* [Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
-  Orders table: created on ingestion based on Kusto's update policies feature, that allows appending rows to a target table by applying transformations to a source table.  
-
-* [Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
-  OrdersLatest table: materialized view - exposes an aggregation over a table or other materialized view  
 
 ---
 

@@ -5,8 +5,8 @@ param location string = 'westeurope'
 param adminLogin string = 'SqlAdmin'
 param adminPassword string = 'ChangeYourAdminPassword1'
 param eventHubNamespaceName string = '${prefix}-ehub-ns'
-param eventHubImpressions string = 'impressions'
-param eventHubClicks string = 'clicks'
+param eventHubEvents string = 'events'
+param ehubConsumerGroup1 string = 'kustoConsumerGroup1'
 
 resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   name: serverName
@@ -59,7 +59,7 @@ resource eventHubNamespace 'Microsoft.EventHub/namespaces@2021-11-01' = {
 }
 
 resource eventHub1 'Microsoft.EventHub/namespaces/eventhubs@2021-11-01' = {
-  name: eventHubImpressions
+  name: eventHubEvents
   parent: eventHubNamespace
   properties: {
     messageRetentionInDays: 1
@@ -67,11 +67,9 @@ resource eventHub1 'Microsoft.EventHub/namespaces/eventhubs@2021-11-01' = {
   }
 }
 
-resource eventHub2 'Microsoft.EventHub/namespaces/eventhubs@2021-11-01' = {
-  name: eventHubClicks
-  parent: eventHubNamespace
-  properties: {
-    messageRetentionInDays: 1
-    partitionCount: 1
-  }
+
+resource kustoConsumerGroup1 'Microsoft.EventHub/namespaces/eventhubs/consumergroups@2021-11-01' = {
+  name: ehubConsumerGroup1
+  parent: eventHub1
+  properties: {}
 }
