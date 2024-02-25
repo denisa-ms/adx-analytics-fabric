@@ -31,19 +31,13 @@ orders
 policy update @'[{"Source": "bronzeOrders", "Query": "ParseOrders", "IsEnabled" : true, "IsTransactional": true }]'
 
 
-//create clicks and impressions tables
-.create table clicks (clickId: guid, impressionId: guid, clickDate: datetime, productId: int) 
-
-.create table impressions (impressionId: guid, impressionDate: datetime, productId: int, browser: string, browserVersion: real, device: string, source: string, ip_address: string, landing_page: string, page_loading_seconds: real)
+//create events tables
+.create table events (eventType: string, eventID: guid, eventDate: datetime, productId: int, userAgent: dynamic, device: string, ip_address:string, referer: dynamic, page_loading_seconds: real) 
 
 
-//create mappings to be used while ingesting events
-.create table impressions ingestion json mapping 'impressions_jsonmapping' '[{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}},{"column":"impressionDate", "Properties":{"Path":"$[\'impressionDate\']"}},{"column":"productId", "Properties":{"Path":"$[\'productId\']"}},{"column":"browser", "Properties":{"Path":"$[\'browser\']"}},{"column":"browserVersion", "Properties":{"Path":"$[\'browserVersion\']"}},{"column":"device", "Properties":{"Path":"$[\'device\']"}},{"column":"source", "Properties":{"Path":"$[\'source\']"}},{"column":"ip_address", "Properties":{"Path":"$[\'ip_address\']"}},{"column":"landing_page", "Properties":{"Path":"$[\'landing_page\']"}},{"column":"page_loading_seconds", "Properties":{"Path":"$[\'page_loading_seconds\']"}}]'
-
-.create table clicks ingestion json mapping 'clicks_jsonmapping' '[{"column":"clickId", "Properties":{"Path":"$[\'clickId\']"}},{"column":"impressionId", "Properties":{"Path":"$[\'impressionId\']"}}, {"column":"clickDate", "Properties":{"Path":"$[\'clickDate\']"}},{"column":"productId", "Properties":{"Path":"$[\'productId\']"}}]'
 
 //change batching policy time to 10 seconds to reflect ingestion changes faster
-.alter tables (clicks, impressions, impressionsToOrders, productRecommendations, bronzeOrders, orders) policy ingestionbatching
+.alter tables (events, bronzeOrders, orders) policy ingestionbatching
 ```
 {
     "MaximumBatchingTimeSpan" : "00:00:10",

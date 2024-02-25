@@ -42,11 +42,7 @@ Built by:
 
 # Fabric Real time analytics features 
 
-We are showcasing many of Fabric RTA capabilities:  
-* One logical copy - 
-
-* JSON dynamic fields
-
+We are showcasing some of the Fabric real time analytics capabilities:  
 * [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>)   
   Products table: defined as an external table hosted in our operational SQL DB. 
   A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
@@ -57,11 +53,18 @@ We are showcasing many of Fabric RTA capabilities:
 * [Data pipelines](<https://learn.microsoft.com/en-us/fabric/data-factory/tutorial-end-to-end-pipeline>)  
   BronzeOrders table is populated by a Fabric Data pipeline using CDC (change data capture) from our operational SQL DB  
 
-* [Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
+* [KQL DB Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
   Orders table: created on ingestion based on Kusto's update policies feature, that allows appending rows to a target table by applying transformations to a source table.  
 
-* [Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
+* [KQL DB Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
   OrdersLatest table: materialized view - exposes an aggregation over a table or other materialized view  
+
+* [KQL DB One logical copy](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/one-logical-copy>) 
+When activated, it will constantly copy the KQL data to your Fabric Datalake in delta format. Allowing you to query the data in your KQL database in Delta Lake format via other Fabric engines such as Direct Lake mode in Power BI, Warehouse, Lakehouse, Notebooks, and more.
+
+* [KQL DB dynamic fields](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/dynamic>)
+Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolving schema changes and object polimorphism, allowing to store different event types that have a common denominator of base fields
+
 
 ---
 
@@ -242,7 +245,11 @@ Create an eventstream to stream events from event hub to our KQL DB
 ![alt text](assets/fabric43.png)
 ![alt text](assets/fabric44.png)
 Run a KQL query to check the incoming events in the clicks table
-![alt text](assets/fabric45.png)
+![alt text](assets/fabric44-1.png)
+
+Note that the events table contains both clicks and impressions events that differ in the JSON schema of their dynamic fields.
+
+
 ## Dashboard
 Download the JSON file defining the dashboard located at [RTA Dashboard](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/dashboards/dashboard-analytics%20RTA%20dashboard.json>)
 Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard, save the file  
