@@ -73,9 +73,10 @@ Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolvi
 The e-commerce store data entities are:  
 * Products: the product catalog.  
 * Orders: the customers orders.  
-* Impressions: event logged when a product is in the search results.
+* Events: a click or impression event.   
+- An impression event is logged when a product is in the search results.
 ![Impressions](assets/store1.png)  
-* Clicks: event logged when the product is clicked and the customer has viewed the details.  
+- A click event is logged when the product is clicked and the customer has viewed the details.  
 ![Clicks](assets/store2.png)  
 
 Photo by <a href="https://unsplash.com/@himiwaybikes?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Himiway Bikes</a> on <a href="https://unsplash.com/photos/black-and-gray-motorcycle-parked-beside-brown-wall-Gj5PXw1kM6U?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>  
@@ -98,8 +99,8 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 * **BronzeOrders**: raw data for the orders, copied to Fabric KQL DB using CDC using Fabric Data pipelines.
 * **Orders**: table created based on an update policy with transformed data.  
 * **OrdersLatest**: materialized view showing only the latest change in the order record.  
-* **Impressions**: streaming events representing the product being seen by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.  
-* **Clicks**: streaming events representing the product being clicked by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.   
+* **Events**: streaming events representing the product being seen or clicked by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.  
+  
 
 ![MRD](assets/mrd.png)  
 
@@ -109,8 +110,8 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 
 At the end of this tutorial we will have the following entities:  
 * An SQL server with the Adventure works sample DB (aka: the operational DB for our e-commerce store).  
-* An event hub with 2 hubs: **clicks** and **impressions** streaming the events we will generate.   
-* Fabric KQL DB
+* An event hub with 1 hub: **events** streaming the events we will generate using the notebooks (simulating user interactions in the E-commerce store).   
+* Fabric KQL DB/ Eventhouse
 * Fabric Lakehouse
 * Fabric Data Pipeline
 * Fabric Event streams for ingesting clicks and impressions events from Event hub into our KQL DB
@@ -178,7 +179,7 @@ Create a Fabric Workspace
 ![alt text](assets/fabric1.png)
 ![alt text](assets/fabric2.png)
 ## KQL DB
-Create a KQL DB - this is our analytics DB
+Create a KQL DB/ Eventhouse - this is our analytics DB
 ![alt text](assets/fabric3.png)
 ![alt text](assets/fabric4.png)
 Go to the github repo for this tutorial and copy the KQL commands in the file:  
@@ -225,7 +226,7 @@ Go to the azure portal and create a shared access policy for the event hub creat
 ![alt text](assets/fabric28-3.png)
 Paste the event hub connection string into the notebook to generate synthetic events
 ![alt text](assets/fabric28-4.png)
-Run the notebook's cells to generate "fake" impressions and clicks events and stream them to our event hubs
+Run the notebook's cells to generate "fake" impressions and clicks events and stream them to our event hub
 ![alt text](assets/fabric28-5.png)
 ## Eventstream 
 Create an eventstream to stream events from event hub to our KQL DB
