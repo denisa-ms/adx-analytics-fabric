@@ -75,17 +75,7 @@ Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolvi
   By enabling us to reference different storage locations, OneLake's Shortcuts provides a unified source of truth for all our data within the Microsoft Fabric environment and ensures clarity regarding the origin of our data.  
 ![Shortcuts](assets/fabric57.png)
 
-## Mirroring  
-* [Fabric Mirroring](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>) 
- is a functionality designed to help us to replicate data from external sources to OneLake, serving the purpose of maintaining data synchronization between two databases or data warehouses. Operating seamlessly in the background, this continuous process guarantees that Microsoft Fabric consistently identifies and integrates updates into the data warehouse in near real-time, for analytical purposes.
-  Accessing and managing this data involves navigating complex ETL (Extract, Transform & Load) pipelines, business processes, and decision silos, resulting in additional disadvantages. These include mission-critical data stored in silos, resulting in restricted access, prolonged wait times for data processes, constrained tool flexibility for analysis, an absence of collaboration foundation, and the lack of common, open data formats for diverse analytical scenarios.
-  Mirroring in Microsoft Fabric addresses these disadvantages by offering two key experiences to expedite the realization of insights and decisions:
-  Near real-time replication of data into a SaaS data lake, featuring integrated analytics experiences for both BI and AI.
-  Depending to the data source, the capability to edit and work with preferred data sources within Fabric, enhancing productivity for both no-code and pro-code developers.
-  Therefore, we can centrally manage the entire data state within Microsoft Fabric, eliminating the need to navigate outside the platform and without relying on ETLs. Given OneLake's commitment to openness and collaboration, we can seamlessly store and access data in a unified data format that is ready for analytics. 
-  As revealed at Microsoft Ignite 2023, customers utilizing Azure Cosmos DB, Azure SQL DB, and Snowflake now have the ability to test the Microsoft Fabric's Mirroring feature. This allows them to replicate their data in OneLake, unlocking the full range of capabilities offered by Microsoft Fabric.
 
-![Mirroring](assets/fabric58.png)
 ---
 
 # The e-commerce store   
