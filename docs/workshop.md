@@ -44,11 +44,21 @@ Built by:
 
 ## Event streams
 * [Event streams](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/event-streams/overview>)   
-  Clicks and Impressions tables: are ingested from Azure Event Hub using event streams  
+  Clicks and Impressions events are ingested from Azure Event Hub using event streams into the "events" tables
 
 ## Data pipelines
 * [Data pipelines](<https://learn.microsoft.com/en-us/fabric/data-factory/tutorial-end-to-end-pipeline>)  
   BronzeOrders table is populated by a Fabric Data pipeline using CDC (change data capture) from our operational SQL DB  
+
+## Shortcuts
+* [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>) 
+  Products table is defined as an external table (faric shortuct) hosted in our operational SQL DB. 
+
+  Shortcuts enable us to create live connections between OneLake and existing target data sources, whether internal or external to Azure. This allows us to retrieve data from these locations as if they were seamlessly integrated into Microsoft Fabric.  
+  A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
+  In Lakehouses and Kusto Query Language (KQL) databases, it's possible to create shortcuts referencing Internal locations within Microsoft Fabric, ADLS Gen2, Spark Notebooks, AWS S3 storage accounts, or Microsoft Dataverse. From my perspective, I value the fact that all data is aligned under a unified namespace, allowing seamless access through the same ADLS Gen2 APIs, even when sourced from AWS S3.
+  By enabling us to reference different storage locations, OneLake's Shortcuts provides a unified source of truth for all our data within the Microsoft Fabric environment and ensures clarity regarding the origin of our data.  
+![Shortcuts](assets/fabric57.png)
 
 ## KQL DB Update policies  
 * [KQL DB Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
@@ -66,14 +76,7 @@ When activated, it will constantly copy the KQL data to your Fabric Datalake in 
 * [KQL DB dynamic fields](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/dynamic>)
 Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolving schema changes and object polimorphism, allowing to store different event types that have a common denominator of base fields
 
-## Shortcuts
-* [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>)  enable us to create live connections between OneLake and existing target data sources, whether internal or external to Azure. This allows us to retrieve data from these locations as if they were seamlessly integrated into Microsoft Fabric.  
 
-- Products table: defined as an external table hosted in our operational SQL DB.  
-  A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
-  In Lakehouses and Kusto Query Language (KQL) databases, it's possible to create shortcuts referencing Internal locations within Microsoft Fabric, ADLS Gen2, Spark Notebooks, AWS S3 storage accounts, or Microsoft Dataverse. From my perspective, I value the fact that all data is aligned under a unified namespace, allowing seamless access through the same ADLS Gen2 APIs, even when sourced from AWS S3.
-  By enabling us to reference different storage locations, OneLake's Shortcuts provides a unified source of truth for all our data within the Microsoft Fabric environment and ensures clarity regarding the origin of our data.  
-![Shortcuts](assets/fabric57.png)
 
 
 ---
