@@ -61,22 +61,20 @@ Built by:
 ![Shortcuts](assets/fabric57.png)
 
 ## KQL DB Update policies  
-* [KQL DB Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
+* [KQL DB - Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
   Orders table: created on ingestion based on Kusto's update policies feature, that allows appending rows to a target table by applying transformations to a source table.  
 
 ## KQL DB Materialized views  
-* [KQL DB Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
+* [KQL DB - Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
   OrdersLatest table: materialized view - exposes an aggregation over a table or other materialized view  
 
 ## KQL DB One logical copy  
-* [KQL DB One logical copy](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/one-logical-copy>) 
+* [KQL DB - One logical copy](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/one-logical-copy>) 
 When activated, it will constantly copy the KQL data to your Fabric Datalake in delta format. Allowing you to query the data in your KQL database in Delta Lake format via other Fabric engines such as Direct Lake mode in Power BI, Warehouse, Lakehouse, Notebooks, and more.
 
 ## KQL DB dynamic fields  
-* [KQL DB dynamic fields](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/dynamic>)
+* [KQL DB - Dynamic fields](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/dynamic>)
 Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolving schema changes and object polimorphism, allowing to store different event types that have a common denominator of base fields
-
-
 
 
 ---
@@ -87,7 +85,7 @@ The e-commerce store data entities are:
 * Products: the product catalog.  
 * Orders: the customers orders.  
 * Events: a click or impression event.   
-- An impression event is logged when a product is in the search results.
+- An impression event is logged when a product appears in the search results.
 ![Impressions](assets/store1.png)  
 - A click event is logged when the product is clicked and the customer has viewed the details.  
 ![Clicks](assets/store2.png)  
@@ -111,7 +109,7 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 * **Products**: shortcut to an external table in the SQL DB.   
 * **BronzeOrders**: raw data for the orders, copied to Fabric KQL DB using CDC using Fabric Data pipelines.
 * **Orders**: table created based on an update policy with transformed data.  
-* **OrdersLatest**: materialized view showing only the latest change in the order record.  
+* **OrdersLatest**: materialized view showing only the latest change in the order record showing how to handle duplicate or updated records.  
 * **Events**: streaming events representing the product being seen or clicked by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.  
   
 
@@ -124,7 +122,7 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 At the end of this tutorial we will have the following entities:  
 * An SQL server with the Adventure works sample DB (aka: the operational DB for our e-commerce store).  
 * An event hub with 1 hub: **events** streaming the events we will generate using the notebooks (simulating user interactions in the E-commerce store).   
-* Fabric KQL DB/ Eventhouse
+* Fabric KQL DB
 * Fabric Lakehouse
 * Fabric Data Pipeline
 * Fabric Event streams for ingesting clicks and impressions events from Event hub into our KQL DB
@@ -177,7 +175,7 @@ Run powershell script in the Azure portal - Cloudshell
 
 <div class="info" data-title="Note">
 
-> Since we are using SQL serverless, this step is used to "awake" our SQL server
+> Since we are using SQL serverless, this step is used to "wake up" our SQL server
 </div>
 
 Open Azure Data Studio and connect to our SQL DB.  
