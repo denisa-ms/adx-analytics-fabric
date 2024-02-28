@@ -67,9 +67,9 @@ When activated, it will constantly copy the KQL data to your Fabric Datalake in 
 Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolving schema changes and object polimorphism, allowing to store different event types that have a common denominator of base fields
 
 ## Shortcuts
-* [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>) 
-  OneLake's Shortcuts enables us to create live connections between OneLake and existing target data sources, whether internal or external to Azure. This allows us to retrieve data from these locations as if they were seamlessly integrated into Microsoft Fabric.  
-  - Products table: defined as an external table hosted in our operational SQL DB. 
+* [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>)  enable us to create live connections between OneLake and existing target data sources, whether internal or external to Azure. This allows us to retrieve data from these locations as if they were seamlessly integrated into Microsoft Fabric.  
+
+- Products table: defined as an external table hosted in our operational SQL DB.  
   A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
   In Lakehouses and Kusto Query Language (KQL) databases, it's possible to create shortcuts referencing Internal locations within Microsoft Fabric, ADLS Gen2, Spark Notebooks, AWS S3 storage accounts, or Microsoft Dataverse. From my perspective, I value the fact that all data is aligned under a unified namespace, allowing seamless access through the same ADLS Gen2 APIs, even when sourced from AWS S3.
   By enabling us to reference different storage locations, OneLake's Shortcuts provides a unified source of truth for all our data within the Microsoft Fabric environment and ensures clarity regarding the origin of our data.  
@@ -77,7 +77,7 @@ Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolvi
 
 ## Mirroring  
 * [Fabric Mirroring](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>) 
-  Fabric Mirroring is a functionality designed to help us to replicate data from external sources to OneLake, serving the purpose of maintaining data synchronization between two databases or data warehouses. Operating seamlessly in the background, this continuous process guarantees that Microsoft Fabric consistently identifies and integrates updates into the data warehouse in near real-time, for analytical purposes.
+ is a functionality designed to help us to replicate data from external sources to OneLake, serving the purpose of maintaining data synchronization between two databases or data warehouses. Operating seamlessly in the background, this continuous process guarantees that Microsoft Fabric consistently identifies and integrates updates into the data warehouse in near real-time, for analytical purposes.
   Accessing and managing this data involves navigating complex ETL (Extract, Transform & Load) pipelines, business processes, and decision silos, resulting in additional disadvantages. These include mission-critical data stored in silos, resulting in restricted access, prolonged wait times for data processes, constrained tool flexibility for analysis, an absence of collaboration foundation, and the lack of common, open data formats for diverse analytical scenarios.
   Mirroring in Microsoft Fabric addresses these disadvantages by offering two key experiences to expedite the realization of insights and decisions:
   Near real-time replication of data into a SaaS data lake, featuring integrated analytics experiences for both BI and AI.
