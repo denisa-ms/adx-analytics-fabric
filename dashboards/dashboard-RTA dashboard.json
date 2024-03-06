@@ -1,13 +1,9 @@
 {
     "$schema": "https://msitpbiadx.powerbi.com/static/d/schema/49/dashboard.json",
-    "id": "64841338-93f5-4a78-862f-84ddd5be9010",
-    "eTag": "\"7e196645c9c4481e978e75832925ac73\"",
+    "id": "d5869e9f-b7ab-45ca-ab06-c33eae8610b9",
+    "eTag": "\"8ac26a3715b8461a86aac18285360dcc\"",
     "schema_version": "49",
-    "title": "analytics RTA dashboard",
-    "autoRefresh": {
-        "enabled": true,
-        "minInterval": "30s"
-    },
+    "title": "RTA dashboard",
     "baseQueries": [],
     "tiles": [
         {
@@ -32,7 +28,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "clicks\n| where clickDate between (_startTime.._endTime)\n| summarize date_count = count() by bin(clickDate, 1d)\n| render timechart \n| top 30 by date_count\n"
+                "text": "events\n| where eventDate between (_startTime.._endTime) and eventType == \"CLICK\"\n| summarize date_count = count() by bin(eventDate, 1d)\n| render timechart \n| top 30 by date_count\n"
             },
             "visualOptions": {
                 "multipleYAxes": {
@@ -50,9 +46,9 @@
                 },
                 "hideLegend": false,
                 "xColumnTitle": "",
-                "xColumn": null,
+                "xColumn": "eventDate",
                 "yColumns": [
-                    "clickDate"
+                    "date_count"
                 ],
                 "seriesColumns": null,
                 "xAxisScale": "linear",
@@ -85,7 +81,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "\n// ctr\nlet imp = \nimpressions\n| where impressionDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(impressionDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\nlet clck = \nclicks\n| where clickDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(clickDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\nimp \n| join clck on $left.dateOnly == $right.dateOnly\n| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count\n"
+                "text": "\n// ctr\nlet imp = \nevents\n| where eventDate  between (_startTime.._endTime) and eventType == \"IMPRESSION\"\n| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\nlet clck = \nevents\n| where eventDate  between (_startTime.._endTime) and eventType == \"CLICK\"\n| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\nimp \n| join clck on $left.dateOnly == $right.dateOnly\n| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count\n\n\n"
             },
             "visualOptions": {
                 "multipleYAxes": {
@@ -138,7 +134,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| join external_table('products') on $left.productId == $right.ProductID\n| project lon = geo_info_from_ip_address(ip_address).longitude, lat = geo_info_from_ip_address(ip_address).latitude, Name\n| render scatterchart with (kind = map)\n\n"
+                "text": "events\n| where eventDate  between (_startTime.._endTime) and eventType == \"IMPRESSION\"\n| join external_table('products') on $left.productId == $right.ProductID\n| project lon = geo_info_from_ip_address(ip_address).longitude, lat = geo_info_from_ip_address(ip_address).latitude, Name\n| render scatterchart with (kind = map)"
             },
             "visualOptions": {
                 "map__type": "bubble",
@@ -173,7 +169,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(impressionDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\n\n"
+                "text": "events\n| where eventDate   between (_startTime.._endTime) and eventType == \"IMPRESSION\"\n| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\n\n"
             },
             "visualOptions": {
                 "multiStat__textSize": "large",
@@ -205,7 +201,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "clicks\n| where clickDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(clickDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\n"
+                "text": "events\n| where eventDate   between (_startTime.._endTime) and eventType == \"CLICK\"\n| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\n"
             },
             "visualOptions": {
                 "multiStat__textSize": "large",
@@ -237,7 +233,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "let imp = \nimpressions\n| where impressionDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(impressionDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\nlet clck = \nclicks\n| where clickDate  between (_startTime.._endTime)\n| extend dateOnly = substring(todatetime(clickDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\nimp \n| join clck on $left.dateOnly == $right.dateOnly\n| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count\n"
+                "text": "let imp = \nevents\n| where eventDate   between (_startTime.._endTime) and eventType == \"IMPRESSION\"\n| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10)\n| summarize imp_count = count() by dateOnly;\nlet clck = \nevents\n| where eventDate  between (_startTime.._endTime) and eventType == \"CLICK\"\n| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10)\n| summarize clck_count = count() by dateOnly;\nimp \n| join clck on $left.dateOnly == $right.dateOnly\n| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count\n"
             },
             "visualOptions": {
                 "multiStat__textSize": "large",
@@ -269,7 +265,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| summarize date_count = avg(page_loading_seconds) by bin(impressionDate, 1d)\n\n"
+                "text": "events\n| where eventDate   between (_startTime.._endTime) and eventType == \"IMPRESSION\"\n| summarize date_count = avg(page_loading_seconds) by bin(eventDate, 1d)\n\n"
             },
             "visualOptions": {
                 "multipleYAxes": {
@@ -320,7 +316,7 @@
                     "_endTime",
                     "_startTime"
                 ],
-                "text": "impressions\n| where impressionDate  between (_startTime.._endTime)\n| summarize max_loading_time = max(page_loading_seconds) by bin(impressionDate, 1d)\n\n"
+                "text": "events\n| where eventDate between (_startTime.._endTime)\n| summarize max_loading_time = max(page_loading_seconds) by bin(eventDate, 1d)\n\n"
             },
             "visualOptions": {
                 "multipleYAxes": {
@@ -374,9 +370,9 @@
             "name": "RTA_analytics_demo_kqldb",
             "scopeId": "kusto-trident",
             "kind": "kusto-trident",
-            "clusterUri": "https://trd-6d5h1jv5ysx81b38zd.z2.kusto.fabric.microsoft.com",
-            "workspace": "a5ffff48-2f89-4188-a99b-f88de16ed5d7",
-            "database": "003f94eb-093e-44df-a2af-c6650905a603"
+            "clusterUri": "<KQL URI HERE>",
+            "workspace": "<WORKSPACE ID HERE>",
+            "database": "<KQL DB HERE>"
         }
     ],
     "pages": [
