@@ -1,5 +1,4 @@
-# Connect-AzAccount
-# Subscription id of the current subscription
+
 $subscriptionId="<add your subscription id here>"
 $resourceGroupName = "adx-fabric-rg"
 $location = "westeurope"

@@ -136,17 +136,22 @@ At the end of this tutorial we will have the following entities:
 # Pre-requisites
 * An [Azure Subscription](<https://azure.microsoft.com/en-us/free/>) where you have admin permissions.   
 * [Microsoft Fabric](<https://www.microsoft.com/en-us/microsoft-fabric/getting-started>) with admin permissions.   
+* [Azure Data Studio](<https://learn.microsoft.com/en-us/azure-data-studio/download-azure-data-studio?view=sql-server-ver16&tabs=win-install%2Cwin-user-install%2Credhat-install%2Cwindows-uninstall%2Credhat-uninstall>)  
 
 ---
 
 # Building the Infrastructure
 Run powershell script in the Azure portal - Cloudshell
 
-1. Go to the azure portal and login with a user that has **administrator permissions**.  
-2. Open the cloud shell in the azure portal.  
-3. Upload the file called ([createAll.ps1](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/createAll.ps1>)) in the github repo by using the upload file button in the cloud shell.  
-4. Upload the file called ([deployAll.bicep](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/deployAll.bicep>)) in the github repo by using the upload file button in the cloud shell.  
-5. Run in cloudShell:  
+1. In the file ([createAll.ps1](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/createAll.ps1>)) edit the **Azure Subscription ID** and save
+```
+$subscriptionId="<add your subscription id here>"
+```  
+2. Go to the azure portal and login with a user that has **administrator permissions**.  
+3. Open the cloud shell in the azure portal.  
+4. Upload the file called ([createAll.ps1](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/createAll.ps1>)) in the github repo by using the upload file button in the cloud shell.  
+5. Upload the file called ([deployAll.bicep](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/deployAll.bicep>)) in the github repo by using the upload file button in the cloud shell.  
+6. Run in cloudShell:  
 ```
 ./createAll.ps1   
 ```  
@@ -224,8 +229,6 @@ Import the notebooks to generate sytnetic data from the githup repo here:
 [Notebooks](<https://github.com/denisa-ms/adx-analytics-fabric/tree/main/notebooks>)
 ![alt text](assets/fabric20.png)
 ![alt text](assets/fabric21.png)
-![alt text](assets/fabric22.png)
-![alt text](assets/fabric22-1.png)
 In order for the notebooks to run, we will create an environment with the imported python libraries to be used when running the notebooks.
 ![alt text](assets/fabric25.png)
 ![alt text](assets/fabric27.png)
@@ -263,19 +266,34 @@ Note that the events table contains both clicks and impressions events that diff
 
 
 ## Dashboard
-Download the JSON file defining the dashboard located at [RTA Dashboard](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/dashboards/dashboard-analytics%20RTA%20dashboard.json>)
-Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard, save the file  
+1. In the file [dashboard-RTA dashboard.json](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/dashboards/dashboard-analytics%20RTA%20dashboard.json>) edit the **clusterUri, workspace and database** (see below).  
+```
+"dataSources": [
+        {
+            "id": "aa9511ff-57a8-4e42-aa58-988fca974be5",
+            "name": "RTA_analytics_demo_kqldb",
+            "scopeId": "kusto-trident",
+            "kind": "kusto-trident",
+            "clusterUri": "<KQL URI HERE>",
+            "workspace": "<WORKSPACE ID HERE>",
+            "database": "<KQL DB HERE>"
+        }
+    ],
+```  
+
+2. Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard, save the file  
 ![alt text](assets/fabric45-1.png)
 ![alt text](assets/fabric45-2.png)
 ![alt text](assets/fabric45-3.png)
-Create a Real time analytics Dashboard to visualize the data
+3. Save the file.  
+4. Create a Real time analytics Dashboard to visualize the data
 ![alt text](assets/fabric46.png)
 ![alt text](assets/fabric47.png)
 ![alt text](assets/fabric48.png)
 ![alt text](assets/fabric49.png)
 ![alt text](assets/fabric50.png)
-Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
+5. Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
 ![alt text](assets/fabric54.png)
-Stop running the notebook
+6. Stop running the notebook
 ![alt text](assets/fabric55.png)
 
