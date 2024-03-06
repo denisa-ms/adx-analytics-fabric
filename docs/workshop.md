@@ -285,15 +285,21 @@ Note that the events table contains both clicks and impressions events that diff
 ![alt text](assets/fabric45-1.png)
 ![alt text](assets/fabric45-2.png)
 ![alt text](assets/fabric45-3.png)
-3. Save the file.  
-4. Create a Real time analytics Dashboard to visualize the data
+3. Get the Workspace ID and the Database ID:   
+When you click on the KQL DB, the URL contains the workspace ID, which is the unique identifier after /groups/ in the URL.  
+For example: https://powerbi.com/groups/11aa111-a11a-1111-1abc-aa1111aaaa/....  
+The Database ID can bd found after /databases/ in the URL.  
+For example: https://msit.powerbi.com/groups/11aa111-a11a-1111-1abc-aa1111aaaa/databases/11aa111-a11a-1111-1abc-aa1111aaaa..  
+ 
+4. Save the file.  
+5. Create a Real time analytics Dashboard to visualize the data
 ![alt text](assets/fabric46.png)
 ![alt text](assets/fabric47.png)
 ![alt text](assets/fabric48.png)
 ![alt text](assets/fabric49.png)
 ![alt text](assets/fabric50.png)
-5. Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
+6. Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
 ![alt text](assets/fabric54.png)
-6. Stop running the notebook
+7. Stop running the notebook
 ![alt text](assets/fabric55.png)
 
