@@ -18,7 +18,7 @@ tags: azure, data, analytics, Kusto, bicep, azure data explorer, fabric         
 # Introduction
 Suppose you own an e-commerce website selling bike accessories.  
 You have millions of visitors a month, you want to analyze the website traffic, consumer patterns and predict sales.  
-This workshop will walk you through the process of building an end-to-end Data Analytics Solution in **less than 1 HOUR**, for your e-commerce website using MS Fabric Real time Analytics.  
+This workshop will walk you through the process of building an end-to-end Data Analytics Solution in MS Fabric, for your e-commerce website.  
 
 
 You will learn how to:
@@ -106,12 +106,19 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 
 # Data schema
 
-* **Products**: shortcut to an external table in the SQL DB.   
-* **BronzeOrders**: raw data for the orders, copied to Fabric KQL DB using CDC using Fabric Data pipelines.
-* **Orders**: table created based on an update policy with transformed data.  
-* **OrdersLatest**: materialized view showing only the latest change in the order record showing how to handle duplicate or updated records.  
-* **Events**: streaming events representing the product being seen or clicked by the customer. Will be streamed into Fabric KQL DB from eventstream and events hub. We will push synthetic data (fake data) into an event hub, using a Fabric Notebook.  
-  
+| Table| Origin     | Description|
+|------|------------|------------|
+| Customer| Copied using Pipeline| Describes customers and their geographic location|
+| Address| Copied using Pipeline|Customers addresses|
+| SalesOrderHeader| Copied using Pipeline|Information about sales orders|
+| SalesOrderDetail| Copied using Pipeline|Detailed information about sales orders, including product IDs and quantities sold|
+| Product|Shortcut to SQL DB|Products, including descriptions and prices|
+| ProductCategory|Shortcut to SQL DB|Product category|
+| SilverOrdersHeader|EventHouse table|Table created based on an update policy with transformed data|
+| SilverOrdersDetail|EventHouse table|Table created based on an update policy with transformed data|
+| GoldOrders|EventHouse table|Materialized view showing only the latest change in the order record showing how to handle duplicate or updated records|
+| Events|EventHouse table|Streaming events representing the product being seen or clicked by the customer. Will be streamed into Fabric Eventhouse from an eventstream. We will push synthetic data (fake data) into an endpoint, using a Fabric Notebook.|
+
 
 ![MRD](assets/mrd.png)  
 

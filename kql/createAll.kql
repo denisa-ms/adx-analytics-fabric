@@ -1,43 +1,143 @@
+.drop table SalesOrderDetail
 
+.drop table SilverSalesOrderDetail
+
+.drop materialized-view GoldSalesOrderDetail
+
+//External tables - shortcuts
 // connect to operational Database with external table Product
 .create external table products (ProductID: int, ProductNumber: string,  Name: string) 
 kind=sql
 table=[SalesLT.Product]
 ( 
-   h@'Server=tcp:<sql server name>.database.windows.net,1433;Initial Catalog=aworks;User Id=SqlAdmin;Password=ChangeYourAdminPassword1'
+   h@'Server=tcp:adxdemo.database.windows.net,1433;Initial Catalog=aworks;User Id=sqlread;Password=ChangeYourAdminPassword1'
 )
 with 
 (
    createifnotexists = true
 )  
+// connect to operational Database with external table ProductCategory
+.create external table productCategories (ProductCategoryID: int, Name: string) 
+kind=sql
+table=[SalesLT.ProductCategory]
+( 
+   h@'Server=tcp:adxdemo.database.windows.net,1433;Initial Catalog=aworks;User Id=sqlread;Password=ChangeYourAdminPassword1'
+)
+with 
+(
+   createifnotexists = true
+) 
 
-// create tables for Orders + transformations 
-.create table [bronzeOrders] (SalesOrderID:long,SalesOrderDetailID:long,OrderQty:long,ProductID:int,UnitPrice:real,UnitPriceDiscount:real,LineTotal:real,ModifiedDate:datetime)
+//BRONZE LAYER
+.create table [Address] (AddressID:int,AddressLine1:string,AddressLine2:string,City: string, StateProvince:string, CountryRegion:string, PostalCode: string, rowguid: guid, ModifiedDate:datetime)
 
-.create table [orders] (SalesOrderID:long,SalesOrderDetailID:long,OrderQty:long,ProductID:int,UnitPrice:real,UnitPriceDiscount:real,LineTotal:real,ModifiedDate:datetime, UnitFinalPrice:real, PurchaseDate:datetime)
+.create table [Customer](CustomerID:int, NameStyle: string, Title: string, FirstName: string, MiddleName: string, LastName: string,Suffix:string, CompanyName: string, SalesPerson: string, EmailAddress: string, Phone: string, ModifiedDate: datetime)
+
+.create table [SalesOrderHeader](SalesOrderID: int, OrderDate: datetime, DueDate: datetime, ShipDate: datetime, ShipToAddressID: int, BillToAddressID: int, SubTotal: decimal, TaxAmt: decimal, Freight: decimal, TotalDue: decimal, ModifiedDate: datetime)
+
+.create table [SalesOrderDetail](SalesOrderID: int, SalesOrderDetailID: int, OrderQty: int, ProductID: int, UnitPrice: decimal , UnitPriceDiscount: decimal,LineTotal: decimal, ModifiedDate: datetime)
+
+//adds a hidden field showing ingestion time
+.alter table Address policy ingestiontime true
+
+.alter table Customer policy ingestiontime true
+
+.alter table SalesOrderHeader policy ingestiontime true
+
+.alter table SalesOrderDetail policy ingestiontime true
+
+
+
+//SILVER LAYER
+.create table [SilverAddress] (AddressID:int,AddressLine1:string,AddressLine2:string,City: string, StateProvince:string, CountryRegion:string, PostalCode: string, rowguid: guid, ModifiedDate:datetime, IngestionDate: datetime)
+
+.create table [SilverCustomer](CustomerID:int, NameStyle: string, Title: string, FirstName: string, MiddleName: string, LastName: string,Suffix:string, CompanyName: string, SalesPerson: string, EmailAddress: string, Phone: string, ModifiedDate: datetime, IngestionDate: datetime)
+
+.create table [SilverSalesOrderHeader](SalesOrderID: int, OrderDate: datetime, DueDate: datetime, ShipDate: datetime, ShipToAddressID: int, BillToAddressID: int, SubTotal: decimal, TaxAmt: decimal, Freight: decimal, TotalDue: decimal, ModifiedDate: datetime, DaysShipped: long, IngestionDate: datetime)
+
+.create table [SilverSalesOrderDetail](SalesOrderID: int, SalesOrderDetailID: int, OrderQty: int, ProductID: int, UnitPrice: decimal, UnitPriceDiscount: decimal,LineTotal: decimal, ModifiedDate: datetime, IngestionDate: datetime)
+
 
 // use update policies to transform data during Ingestion
 .create function
-with (docstring = 'Ingest raw orders data and calculate the final unit price')
-ParseOrders ()
+with (docstring = 'Add ingestion time to raw data')
+ParseAddress ()
 {
-bronzeOrders
-| extend UnitFinalPrice = round(UnitPrice * (1-UnitPriceDiscount),2)
-| extend PurchaseDate = todatetime(split(ModifiedDate, " ")[0])
+Address
+| extend IngestionDate = ingestion_time() 
 }
 
 .alter table
-orders 
-policy update @'[{"Source": "bronzeOrders", "Query": "ParseOrders", "IsEnabled" : true, "IsTransactional": true }]'
+SilverAddress 
+policy update @'[{"Source": "Address", "Query": "ParseAddress", "IsEnabled" : true, "IsTransactional": true }]'
+
+.create function
+with (docstring = 'Add ingestion time to raw data')
+ParseCustomer ()
+{
+Customer
+| extend IngestionDate = ingestion_time() 
+}
+
+.alter table
+SilverCustomer 
+policy update @'[{"Source": "Customer", "Query": "ParseCustomer", "IsEnabled" : true, "IsTransactional": true }]'
 
 
-//create events tables
-.create table events (eventType: string, eventID: guid, eventDate: datetime, productId: int, userAgent: dynamic, device: string, ip_address:string, referer: dynamic, page_loading_seconds: real) 
+.create function
+with (docstring = 'Add ingestion time to raw data')
+ParseSalesOrderHeader ()
+{
+SalesOrderHeader
+| extend DaysShipped = datetime_diff('day', ShipDate, OrderDate)
+| extend IngestionDate = ingestion_time() 
+}
 
 
+.alter table
+SilverSalesOrderHeader 
+policy update @'[{"Source": "SalesOrderHeader", "Query": "ParseSalesOrderHeader", "IsEnabled" : true, "IsTransactional": true }]'
+
+.create function
+with (docstring = 'Add ingestion time to raw data')
+ParseSalesOrderDetail ()
+{
+SalesOrderDetail
+| extend IngestionDate = ingestion_time() 
+}
+
+.alter table
+SilverSalesOrderDetail 
+policy update @'[{"Source": "SalesOrderDetail", "Query": "ParseSalesOrderDetail", "IsEnabled" : true, "IsTransactional": true }]'
+
+//GOLD LAYER
+// use materialized views to view the latest changes in the orders table
+.create materialized-view with (backfill=true) GoldAddress on table SilverAddress
+{
+    SilverAddress
+    | summarize arg_max(IngestionDate, *) by AddressID
+}
+
+.create materialized-view with (backfill=true) GoldCustomer on table SilverCustomer
+{
+    SilverCustomer
+    | summarize arg_max(IngestionDate, *) by CustomerID
+}
+
+.create  materialized-view with (backfill=true) GoldSalesOrderHeader on table SilverSalesOrderHeader
+{
+    SilverSalesOrderHeader
+    | summarize arg_max(IngestionDate, *) by SalesOrderID
+}
+
+.create  materialized-view with (backfill=true) GoldSalesOrderDetail on table SilverSalesOrderDetail
+{
+    SilverSalesOrderDetail
+    | summarize arg_max(IngestionDate, *) by SalesOrderDetailID
+}
 
 //change batching policy time to 10 seconds to reflect ingestion changes faster
-.alter tables (events, bronzeOrders, orders) policy ingestionbatching
+.alter tables (Address, Customer, SalesOrderHeader, SalesOrderDetail, SilverAddress,SilverCustomer, SilverSalesOrderHeader, SilverSalesOrderDetail) policy ingestionbatching
 ```
 {
     "MaximumBatchingTimeSpan" : "00:00:10",
@@ -45,12 +145,4 @@ policy update @'[{"Source": "bronzeOrders", "Query": "ParseOrders", "IsEnabled" 
     "MaximumRawDataSizeMB": 300
 }
 ```
-
-// use materialized views to view the latest changes in the orders table
-.create async materialized-view with (backfill=true) ordersLatest on table orders
-{
-    orders
-    | summarize arg_max(ModifiedDate, *) by SalesOrderDetailID
-}
-
 
