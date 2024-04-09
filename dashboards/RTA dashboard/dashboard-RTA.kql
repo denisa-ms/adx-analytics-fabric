@@ -1,61 +1,16 @@
-//Clicks by date
+//Clicks by hour
 Event 
 | where eventDate between (_startTime.._endTime) and eventType == "CLICK" 
-| summarize date_count = count() by bin(eventDate, 1d) 
+| summarize date_count = count() by bin(eventDate, 1h) 
 | render timechart  
 | top 30 by date_count 
 
-//Impressions by date
+//Impressions by hour
 Event 
 | where eventDate between (_startTime.._endTime) and eventType == "IMPRESSION" 
-| summarize date_count = count() by bin(eventDate, 1d) 
+| summarize date_count = count() by bin(eventDate, 1h) 
 | render timechart  
 | top 30 by date_count 
-
-// Impressions 
-let imp =  
-Event 
-| where eventDate  between (_startTime.._endTime) and eventType == "IMPRESSION" 
-| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
-| summarize imp_count = count() by dateOnly; 
-let clck =  
-Event 
-| where eventDate  between (_startTime.._endTime) and eventType == "CLICK" 
-| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
-| summarize clck_count = count() by dateOnly;
-imp  
-| join clck on $left.dateOnly == $right.dateOnly 
-| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count
-
-// Clicks 
-let imp =  
-Event 
-| where eventDate  between (_startTime.._endTime) and eventType == "IMPRESSION" 
-| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
-| summarize imp_count = count() by dateOnly; 
-let clck =  
-Event 
-| where eventDate  between (_startTime.._endTime) and eventType == "CLICK" 
-| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
-| summarize clck_count = count() by dateOnly;
-imp  
-| join clck on $left.dateOnly == $right.dateOnly 
-| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count
-
-// CTR 
-let imp =  
-Event 
-| where eventDate  between (_startTime.._endTime) and eventType == "IMPRESSION" 
-| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
-| summarize imp_count = count() by dateOnly; 
-let clck =  
-Event 
-| where eventDate  between (_startTime.._endTime) and eventType == "CLICK" 
-| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
-| summarize clck_count = count() by dateOnly;
-imp  
-| join clck on $left.dateOnly == $right.dateOnly 
-| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count
 
 //show map of impressions location
 Event 
@@ -70,3 +25,19 @@ Event
 | where eventDate   between (_startTime.._endTime) and eventType == "IMPRESSION" 
 | summarize average_loadtime = avg(page_loading_seconds) by bin(eventDate, 1h) 
 | render linechart 
+
+// Impressions, clicks and CTR
+let imp =  
+Event 
+| where eventDate  between (_startTime.._endTime) and eventType == "IMPRESSION" 
+| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
+| summarize imp_count = count() by dateOnly; 
+let clck =  
+Event 
+| where eventDate  between (_startTime.._endTime) and eventType == "CLICK" 
+| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
+| summarize clck_count = count() by dateOnly;
+imp  
+| join clck on $left.dateOnly == $right.dateOnly 
+| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count
+

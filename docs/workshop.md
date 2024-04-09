@@ -260,14 +260,7 @@ Paste it in the KQL panel in the KQL DB and run it.
 ![alt text](assets/fabrta28.png)
 
 ## Data pipeline
-Create Data pipelines to copy the data from the SQL DB tables to our KQL DB.  
-
-
-## RTA Dashboard
-In this step we will create a real time dashboard to visualize the data that looks as follows:  
-![alt text](assets/dashboard.png)
-
-Create a Data Pipeline that you can run periodically to copy data to our Eventhouse DB.
+Create the Data Pipelines that you can run periodically to copy data to our Eventhouse DB.
 ![alt text](assets/fabrta31.png)
 Name it "Copy Address table".  
 ![alt text](assets/fabrta32.png)
@@ -275,10 +268,158 @@ Name it "Copy Address table".
 Select the Pipeline Activity - Copy data activity 
 ![alt text](assets/fabrta33.png)
 
+Select Source - External and click "+" to create a new connection to the SQL DB
+![alt text](assets/fabrta34.png)
 
+Fill in the details as follows:  
+```
+servername= adxdemo.database.windows.net
+Database name=aworks
+UserName=sqlread
+Password=ChangeYourAdminPassword1
 
-Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
-![alt text](assets/fabric54.png)
-Stop running the notebook
-![alt text](assets/fabric55.png)
+```
+![alt text](assets/fabrta35.png)
+![alt text](assets/fabrta36.png)
 
+After creating and testing the Data Connection to the SQL DB, select Database and Table "SalesLT.Address".  
+![alt text](assets/fabrta37.png)
+
+Click on "Destination" tab, select "Workspace"- KQL DB - RTADemo - Address as target table.  
+![alt text](assets/fabrta38.png)
+
+Click on "mapping" tab - Import schemas - and make sure all fields are mapped to the correct types with no warnings.  
+
+Click "run" to execute the pipeline.
+![alt text](assets/fabrta39.png)
+
+The pipeline will run until you see status "succeeded".
+![alt text](assets/fabrta40.png)
+
+Run the pipeline again by clicking the "Run" button.
+We are running the data pipeline twice to show how we are deduping rows.  
+
+Let's check the data we copied.  
+Go to our KQL RTADemo Database in your Fabric Workspace.
+When running the query - we see 900 rows
+```
+Address
+```
+![alt text](assets/fabrta42.png)  
+
+In the SQL DB (source) we have 450 rows
+![alt text](assets/fabrta43.png)
+
+Now go to our KQL RTADemo Database in your Fabric Workspace.  
+Run the following query  
+```
+SilverAddress
+```
+We see there are 900 rows and 1 additional column (IngestionDate) 
+![alt text](assets/fabrta44.png)
+
+Run the following query  
+```
+GoldAddress
+```
+We see there are 450 rows since the Gold layer contains materialized views using the maximum IngestionDate to show only the latest ingested rows.
+```
+//GOLD LAYER
+// use materialized views to view the latest changes in the orders table
+.create materialized-view with (backfill=true) GoldAddress on table SilverAddress
+{
+    SilverAddress
+    | summarize arg_max(IngestionDate, *) by AddressID
+}
+```
+![alt text](assets/fabrta45.png)
+
+<div class="info" data-title="Note">  
+
+> Repeat all the steps in the Data pipeline creation for the Customer, SalesOrderHeader and SalesOrderDetail.
+> Pay attention that the SalesOrderDetail mapping requires you to map money type from SQL to the decimal data type in KQL.  
+</div>
+
+![alt text](assets/fabrta46.png)
+
+# RTA Dashboard
+We will build a real time dashboard to visualize the streaming data.  
+It will be refreshed every 30 seconds.
+![alt text](assets/dashboard.png)
+
+Go to your Fabric Workspace and click on New - More options
+![alt text](assets/fabrta47.png)
+
+Scroll down and choose Real Time Dashboard
+![alt text](assets/fabrta48.png)
+Name it "RTA Dashboard"  
+![alt text](assets/fabrta49.png)
+![alt text](assets/fabrta50.png)
+
+## Define Data source  
+![alt text](assets/fabrta51.png)
+
+## Create all dashboard tiles 
+All KQL queries for the tiles can be found in the  [dashboard-RTA.kql](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/dashboards/RTA%20dashboard/dashboard-RTA.kql>) file
+
+### Clicks by date 
+```
+//Clicks by hour
+Event 
+| where eventDate between (_startTime.._endTime) and eventType == "CLICK" 
+| summarize date_count = count() by bin(eventDate, 1h) 
+| render timechart  
+| top 30 by date_count 
+```
+![alt text](assets/fabrta52.png)
+```
+//Impressions by hour
+Event 
+| where eventDate between (_startTime.._endTime) and eventType == "IMPRESSION" 
+| summarize date_count = count() by bin(eventDate, 1h) 
+| render timechart  
+| top 30 by date_count 
+```
+![alt text](assets/fabrta53.png)
+```
+//show map of impressions location
+Event 
+| where eventDate  between (_startTime.._endTime) and eventType == "IMPRESSION" 
+| join external_table('products') on $left.productId == $right.ProductID 
+| project lon = geo_info_from_ip_address(ip_address).longitude, lat = geo_info_from_ip_address(ip_address).latitude, Name 
+| render scatterchart with (kind = map)
+```
+
+![alt text](assets/fabrta54.png)
+```
+//Average Page Load time
+Event 
+| where eventDate   between (_startTime.._endTime) and eventType == "IMPRESSION" 
+| summarize average_loadtime = avg(page_loading_seconds) by bin(eventDate, 1h) 
+| render linechart 
+```
+![alt text](assets/fabrta55.png)
+The 3 tiles showing a card with a number use the same query (see below) but show a different field.  
+```
+let imp =  
+Event 
+| where eventDate  between (_startTime.._endTime) and eventType == "IMPRESSION" 
+| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
+| summarize imp_count = count() by dateOnly; 
+let clck =  
+Event 
+| where eventDate  between (_startTime.._endTime) and eventType == "CLICK" 
+| extend dateOnly = substring(todatetime(eventDate).tostring(), 0, 10) 
+| summarize clck_count = count() by dateOnly;
+imp  
+| join clck on $left.dateOnly == $right.dateOnly 
+| project selected_date = dateOnly , impressions = imp_count , clicks = clck_count, CTR = clck_count * 100 / imp_count
+```
+![alt text](assets/fabrta56.png)
+![alt text](assets/fabrta57.png)
+![alt text](assets/fabrta58.png)
+
+## Stop running the notebook
+![alt text](assets/fabrta60.png)
+
+THAT's ALL FOLKS!!  
