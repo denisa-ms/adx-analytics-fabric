@@ -1,9 +1,4 @@
-.drop table SalesOrderDetail
-
-.drop table SilverSalesOrderDetail
-
-.drop materialized-view GoldSalesOrderDetail
-
+.execute database script <|
 //External tables - shortcuts
 // connect to operational Database with external table Product
 .create external table products (ProductID: int, ProductNumber: string,  Name: string) 
@@ -59,7 +54,7 @@ with
 
 
 // use update policies to transform data during Ingestion
-.create function
+.create function ifnotexists 
 with (docstring = 'Add ingestion time to raw data')
 ParseAddress ()
 {
@@ -71,7 +66,7 @@ Address
 SilverAddress 
 policy update @'[{"Source": "Address", "Query": "ParseAddress", "IsEnabled" : true, "IsTransactional": true }]'
 
-.create function
+.create function ifnotexists 
 with (docstring = 'Add ingestion time to raw data')
 ParseCustomer ()
 {
@@ -84,7 +79,7 @@ SilverCustomer
 policy update @'[{"Source": "Customer", "Query": "ParseCustomer", "IsEnabled" : true, "IsTransactional": true }]'
 
 
-.create function
+.create function ifnotexists 
 with (docstring = 'Add ingestion time to raw data')
 ParseSalesOrderHeader ()
 {
@@ -98,7 +93,7 @@ SalesOrderHeader
 SilverSalesOrderHeader 
 policy update @'[{"Source": "SalesOrderHeader", "Query": "ParseSalesOrderHeader", "IsEnabled" : true, "IsTransactional": true }]'
 
-.create function
+.create function ifnotexists 
 with (docstring = 'Add ingestion time to raw data')
 ParseSalesOrderDetail ()
 {

@@ -1,7 +1,7 @@
 ---
 published: true                        # Optional. Set to true to publish the workshop (default: false)
 type: workshop                          # Required.
-title: Building an Analytics Platform with MS Fabric Real time analytics              # Required. Full title of the workshop
+title: Building a Medallion Architecture on MS Fabric Real time Analytics               # Required. Full title of the workshop
 short_title: MS Fabric - Real time analytics Tutorial    # Optional. Short title displayed in the header
 description: In this technical workshop, you will build a complete Analytics Platform   # Required.
 level: advanced                         # Required. Can be 'beginner', 'intermediate' or 'advanced'
@@ -18,13 +18,13 @@ tags: azure, data, analytics, Kusto, bicep, azure data explorer, fabric         
 # Introduction
 Suppose you own an e-commerce website selling bike accessories.  
 You have millions of visitors a month, you want to analyze the website traffic, consumer patterns and predict sales.  
-This workshop will walk you through the process of building an end-to-end Data Analytics Solution in MS Fabric, for your e-commerce website.  
+This workshop will walk you through the process of building an end-to-end Real time Analytics Solution in MS Fabric, using the medallion architecture, for your e-commerce website.  
 
 
 You will learn how to:
-* Build a star schema in MS Fabric RTA (Real time analytics)
-* Use Fabric data pipelines for CDC (change data capture) to ingest data from an operational DB (SQL server)
-* Stream events into Azure Event hubs and ingest them into MS Fabric RTA (Real time analytics) using EventStream
+* Build a medallion architecture in MS Fabric Real time analytics
+* Use Fabric data pipelines for copying data from an operational DB (SQL server with Adventure works sample data)
+* Stream events and ingest them into MS Fabric RTA (Real time analytics) using EventStream
 * Create data transformations in Fabric RTA (Real time analytics)
 * Create reports for real time visualizations using RTA (Real time analytics) dashboards
 
@@ -40,54 +40,86 @@ Built by:
 
 ---
 
+# What is the Medallion Architecture?
+A medallion architecture (also coined by Databricks) is a data design pattern used to logically organize data.
+The goal is to incrementally improve the structure and quality of data as it flows through each layer of the architecture.
+Medallion architectures are sometimes also referred to as "multi-hop" architectures.
+
+Creating a multi layer data platform allow companies to improve data quality across the layers and at the same time provide for their business needs.
+Unstructured and raw data are ingested using scalable pipelines to output the highest quality enriched data.
+It contains 3 basic layers.
+
+## Bronze layer
+- Contains raw data, sometimes referenced as the data staging area.  
+- Not accessible to consumers only to engineers.  
+- May contain data with PII (personal identifiable information).  
+
+## Silver layer
+- Contains deduplicated, enriched data.  
+- Accessible to all consumers.  
+- Contains “anonymized data” (no PII).  
+- Consumers: Data analysts, Data scientists, Engineers.  
+
+## Gold layer
+- Contains aggregated data.  
+- Accessible to all consumers.  
+- Built for dashboards.
+
+---
+
 # Fabric Real time analytics features 
 
 ## Event streams
 * [Event streams](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/event-streams/overview>)   
-  Clicks and Impressions events are ingested from Azure Event Hub using event streams into the "events" tables
+  Clicks and Impressions events are ingested from an Eventstream into the "Event" table
 
 ## Data pipelines
 * [Data pipelines](<https://learn.microsoft.com/en-us/fabric/data-factory/tutorial-end-to-end-pipeline>)  
-  BronzeOrders table is populated by a Fabric Data pipeline using CDC (change data capture) from our operational SQL DB  
+  Bronze layer tables are populated by an MS Fabric Data pipeline copying data from our operational SQL DB 
 
 ## Shortcuts
 * [Shortcuts](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/onelake-shortcuts?tabs=onelake-shortcut>) 
-  Products table is defined as an external table (faric shortuct) hosted in our operational SQL DB. 
+  Product and ProductCategory tables are defined as external tables (fabric shortcuts) hosted in our operational SQL DB.  
+  Meaning the data is not copied but served from the SQL DB itself.  
 
   Shortcuts enable us to create live connections between OneLake and existing target data sources, whether internal or external to Azure. This allows us to retrieve data from these locations as if they were seamlessly integrated into Microsoft Fabric.  
   A shortcut is a schema entity that references data stored external to a KQL database in your cluster.  
   In Lakehouses and Kusto Query Language (KQL) databases, it's possible to create shortcuts referencing Internal locations within Microsoft Fabric, ADLS Gen2, Spark Notebooks, AWS S3 storage accounts, or Microsoft Dataverse. From my perspective, I value the fact that all data is aligned under a unified namespace, allowing seamless access through the same ADLS Gen2 APIs, even when sourced from AWS S3.
   By enabling us to reference different storage locations, OneLake's Shortcuts provides a unified source of truth for all our data within the Microsoft Fabric environment and ensures clarity regarding the origin of our data.  
-![Shortcuts](assets/fabric57.png)
 
-## KQL DB Update policies  
+## KQL DB - Update policies  
 * [KQL DB - Update policies](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/update-policy>)    
-  Orders table: created on ingestion based on Kusto's update policies feature, that allows appending rows to a target table by applying transformations to a source table.  
+  Update policies are automation mechanisms triggered when new data is written to a table. They eliminate the need for special orchestration by running a query to transform the ingested data and save the result to a destination table. Multiple update policies can be defined on a single table, allowing for different transformations and saving data to multiple tables simultaneously. The target tables can have a different schema, retention policy, and other policies from the source table.  
+  The silver layer tables in our medallion architecture will be created upon ingestion, based on Kusto's update policies feature,  allowing to append rows to a target table by applying transformations to a source table.  
 
-## KQL DB Materialized views  
-* [KQL DB - Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)  
-  OrdersLatest table: materialized view - exposes an aggregation over a table or other materialized view  
+## KQL DB - Materialized views  
+* [KQL DB - Materialized views](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/management/materialized-views/materialized-view-overview>)   
+  Materialized views expose an aggregation query over a source table, or over another materialized view.  
+  We will use materialized views to create the Gold Layer in our medallion architecture.  
 
-## KQL DB One logical copy  
+## KQL DB - One logical copy  
 * [KQL DB - One logical copy](<https://learn.microsoft.com/en-us/fabric/real-time-analytics/one-logical-copy>) 
-When activated, it will constantly copy the KQL data to your Fabric Datalake in delta format. Allowing you to query the data in your KQL database in Delta Lake format via other Fabric engines such as Direct Lake mode in Power BI, Warehouse, Lakehouse, Notebooks, and more.
+When activated, it will constantly copy the KQL data to your Fabric Datalake in delta format. Allowing you to query the data in your KQL database in Delta Lake format using Spark or SQL endpoint on the Lakehouse.
 
 ## KQL DB dynamic fields  
 * [KQL DB - Dynamic fields](<https://learn.microsoft.com/en-us/azure/data-explorer/kusto/query/scalar-data-types/dynamic>)
 Dynamic fields are a powerful feature of Eventhouse/ KQL DB that supports evolving schema changes and object polimorphism, allowing to store different event types that have a common denominator of base fields
 
-
 ---
 
 # The e-commerce store   
 
-The e-commerce store data entities are:  
-* Products: the product catalog.  
-* Orders: the customers orders.  
-* Events: a click or impression event.   
-- An impression event is logged when a product appears in the search results.
+The e-commerce store database entities are:  
+* Product: the product catalog. 
+* ProductCategory: the product categories.  
+* Customer: the customers that purchased items in the store.
+* Address: the addresses of the customers.
+* SalesOrderHeader: the metadata for the orders.
+* SalesOrderDetail: every item purchased in an order.
+* Event: a click or impression event.   
+  - An impression event is logged when a product appears in the search results.
 ![Impressions](assets/store1.png)  
-- A click event is logged when the product is clicked and the customer has viewed the details.  
+  - A click event is logged when the product is clicked and the customer has viewed the details.  
 ![Clicks](assets/store2.png)  
 
 Photo by <a href="https://unsplash.com/@himiwaybikes?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Himiway Bikes</a> on <a href="https://unsplash.com/photos/black-and-gray-motorcycle-parked-beside-brown-wall-Gj5PXw1kM6U?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash">Unsplash</a>  
@@ -106,6 +138,11 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 
 # Data schema
 
+## Data flow
+![MRD](assets/mrd.png)  
+
+
+## Tables
 | Table| Origin     | Description|
 |------|------------|------------|
 | Customer| Copied using Pipeline| Describes customers and their geographic location|
@@ -114,29 +151,16 @@ Photo by <a href="https://unsplash.com/@jxk?utm_content=creditCopyText&utm_mediu
 | SalesOrderDetail| Copied using Pipeline|Detailed information about sales orders, including product IDs and quantities sold|
 | Product|Shortcut to SQL DB|Products, including descriptions and prices|
 | ProductCategory|Shortcut to SQL DB|Product category|
+| SilverCustomer|EventHouse table|Table created based on an update policy with transformed data|
+| SilverAddress|EventHouse table|Table created based on an update policy with transformed data|
 | SilverOrdersHeader|EventHouse table|Table created based on an update policy with transformed data|
 | SilverOrdersDetail|EventHouse table|Table created based on an update policy with transformed data|
-| GoldOrders|EventHouse table|Materialized view showing only the latest change in the order record showing how to handle duplicate or updated records|
-| Events|EventHouse table|Streaming events representing the product being seen or clicked by the customer. Will be streamed into Fabric Eventhouse from an eventstream. We will push synthetic data (fake data) into an endpoint, using a Fabric Notebook.|
+| GoldAddress|EventHouse table|Materialized view showing only the latest changes in the source table showing how to handle duplicate or updated records|
+| GoldCustomer|EventHouse table|Materialized view showing only the latest changes in the source table showing how to handle duplicate or updated records|
+| GoldSalesOrderHeader|EventHouse table|Materialized view showing only the latest changes in the source table showing how to handle duplicate or updated records|
+| GoldSalesOrderDetail|EventHouse table|Materialized view showing only the latest changes in the source table showing how to handle duplicate or updated records|
+| Event|EventHouse table|Streaming events representing the product being seen or clicked by the customer. Will be streamed into Fabric Eventhouse from an eventstream. We will push synthetic data (fake data) into an endpoint, using a Fabric Notebook.|
 
-
-![MRD](assets/mrd.png)  
-
----
-
-# Resources to be created 
-
-At the end of this tutorial we will have the following entities:  
-* An SQL server with the Adventure works sample DB (aka: the operational DB for our e-commerce store).  
-* An event hub with 1 hub: **events** streaming the events we will generate using the notebooks (simulating user interactions in the E-commerce store).   
-* Fabric KQL DB
-* Fabric Lakehouse
-* Fabric Data Pipeline
-* Fabric Event streams for ingesting clicks and impressions events from Event hub into our KQL DB
-* Fabric Notebooks for synthetic data generation (event streaming)
-* Fabric Real time Dashboard for visualization  
-  
-![Deployed resources](assets/infra4.png)
 
 ---
 
@@ -145,168 +169,116 @@ At the end of this tutorial we will have the following entities:
 * [Microsoft Fabric](<https://www.microsoft.com/en-us/microsoft-fabric/getting-started>) with admin permissions.   
 * [Azure Data Studio](<https://learn.microsoft.com/en-us/azure-data-studio/download-azure-data-studio?view=sql-server-ver16&tabs=win-install%2Cwin-user-install%2Credhat-install%2Cwindows-uninstall%2Credhat-uninstall>)  
 
----
-
-# Building the Infrastructure
-Run powershell script in the Azure portal - Cloudshell
-
-1. In the file ([createAll.ps1](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/createAll.ps1>)) edit the **Azure Subscription ID** and save
-```
-$subscriptionId="<add your subscription id here>"
-```  
-2. Go to the azure portal and login with a user that has **administrator permissions**.  
-3. Open the cloud shell in the azure portal.  
-4. Upload the file called ([createAll.ps1](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/createAll.ps1>)) in the github repo by using the upload file button in the cloud shell.  
-5. Upload the file called ([deployAll.bicep](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/infrastructure%20scripts/deployAll.bicep>)) in the github repo by using the upload file button in the cloud shell.  
-6. Run in cloudShell:  
-```
-./createAll.ps1   
-```  
-
-<div class="info" data-title="Note">
-
-> This takes time, so be patient 
-</div>
-
-![Alt text](assets/infra1.png)
-![Alt text](assets/infra2.png)
-![Alt text](assets/infra3.png)
-![Alt text](assets/infra4.png)
-
-
----
-
-
-# KQL Database schema  
-![MRD](assets/mrd.png)
-
----
-
-
-# Post deployment tasks  
-
-<div class="info" data-title="Note">
-
-> Since we are using SQL serverless, this step is used to "wake up" our SQL server
-</div>
-
-Open Azure Data Studio and connect to our SQL DB.  
-![SQL DB](assets/sql1.png)  
-
 
 ---
 
 # Building the Analytics platform
 ## Fabric Workspace 
 Create a Fabric Workspace
-![alt text](assets/fabric1.png)
-![alt text](assets/fabric2.png)
-## KQL DB
-Create a KQL DB/ Eventhouse - this is our analytics DB
-![alt text](assets/fabric3.png)
-![alt text](assets/fabric4.png)
-Go to the github repo for this tutorial and copy the KQL commands in the file:  
-[KQL script](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/kql/createAll.kql>)
-![alt text](assets/fabric5.png)
-Paste them in the KQL DB data explore pane
-![alt text](assets/fabric6.png)
-Go to the Azure portal and copy the sql servername we created in the deployment scripts  
-![alt text](assets/fabric5-1.png)
-Paste it in the KQL DB data explore pane for the external table creation  
-![alt text](assets/fabric6-1.png)
-Run all commands in the KQL DB data explore pane one by one to create all the tables, update policies and materialized views  
-![alt text](assets/fabric7.png)
+![alt text](assets/fabrta0.png)
+![alt text](assets/fabrta0-1.png)
+
+## Create a new Eventhouse  
+Create an Eventhouse called "RTAdemo"  
+![alt text](assets/fabrta1.png)
+![alt text](assets/fabrta2.png)
+
+## Create a new Eventstream  
+Create an Eventhouse called "RTADemoEventStream"  
+![alt text](assets/fabrta3.png)
+![alt text](assets/fabrta4.png)
+
+When we create a "Custom app" as a source, an event hub is created and connected to the EventStream for us.  
+Click on the EventStram source - Custom App to get the event hub endpoint and key to send the events from our notebook.  
+![alt text](assets/fabrta5.png)
+![alt text](assets/fabrta6.png)  
+
+Click on "Sample code" and copy the connectionString to a notepad
+![alt text](assets/fabrta7.png)
+
+Click on "Keys" and copy the event hub name to a notepad
+![alt text](assets/fabrta8.png)
+
+## Import Data Generator Notebook
+Import the [Generate synthetic events notebook](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/notebooks/Generate%20synthetic%20events.ipynb>) to generate events using streaming
+![alt text](assets/fabrta8.1.png)
+![alt text](assets/fabrta8.2.png)
+
+Copy the connectionstring and key you pasted into a notepad in the previous step and paste it in the Notebook first code block
+![alt text](assets/fabrta9.png)
+
+## Create an environment 
+In order for the compute to run the notebook to have the right libraries, we will create an "environment".
+Make sure you are creating an environment with Spark 3.4 (see image below).  
+Add the libraries:  
+- azure-eventhub  
+- faker  
+- pyodbc  
+
+![alt text](assets/fabrta10.png)
+![alt text](assets/fabrta11.png)
+![alt text](assets/fabrta12.png)
+![alt text](assets/fabrta13.png)
+![alt text](assets/fabrta14.png)
+
+## Run the notebook
+Open the "generate synthetic events" notebook in your Fabric Workspace.  
+Check the python version is "3.10.12.  
+Run all the cells in the notebook to start generating streaming events.  
+![alt text](assets/fabrta16.1.png)
+
+## Define destination in the EventStream
+Open the EventStream in your Fabric Workspace.  
+Select "New Destination" - KQL Database.  
+![alt text](assets/fabrta17.png)
+
+Select Workspace and the KQL DB we created called "RTADemo"
+![alt text](assets/fabrta18.png)
+
+Create a new table in our KQL DB called "Event".  
+![alt text](assets/fabrta19.png)
+
+You will see a sample of the streaming data showing click and impression events, Click Finish and Close.  
+![alt text](assets/fabrta20.png)
+![alt text](assets/fabrta21.png)
+
+Now, we can see the EventStream destination is in mode "Ingesting".  
+![alt text](assets/fabrta22.png)
+![alt text](assets/fabrta23.png)
+
+## Build the KQL DB schema
+Open the RTADemo Eventhouse from your Fabric Workspace.  Click on "Explore your Data".  
+![alt text](assets/fabrta24.png)
+![alt text](assets/fabrta25.png)
+
+
+Run the KQL scripts to create all the tables.  
+Open the  [createAll.kql](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/kql/createAll.kql>) file and copy the entire file content.  
+![alt text](assets/fabrta26.png)
+Paste it in the KQL panel in the KQL DB and run it.  
+![alt text](assets/fabrta27.png)
+![alt text](assets/fabrta28.png)
+
 ## Data pipeline
-Create a Data pipeline to copy the data from the SQL DB orders table to our KQL DB using CDC
-![alt text](assets/fabric8.png)
-![alt text](assets/fabric9.png)
-![alt text](assets/fabric10.png)
-![alt text](assets/fabric11.png)
-![alt text](assets/fabric12.png)
-![alt text](assets/fabric13.png)
-![alt text](assets/fabric14.png)
-![alt text](assets/fabric15.png)
-![alt text](assets/fabric16.png)
-![alt text](assets/fabric17.png)
-![alt text](assets/fabric18.png)
-Run a KQL command to check the orders were copied into our KQL DB
-![alt text](assets/fabric19.png)
-## Notebooks
-Import the notebooks to generate sytnetic data from the githup repo here:  
-[Notebooks](<https://github.com/denisa-ms/adx-analytics-fabric/tree/main/notebooks>)
-![alt text](assets/fabric20.png)
-![alt text](assets/fabric21.png)
-In order for the notebooks to run, we will create an environment with the imported python libraries to be used when running the notebooks.
-![alt text](assets/fabric25.png)
-![alt text](assets/fabric27.png)
-![alt text](assets/fabric28.png)
-Connect the Notebook to the created environment
-![alt text](assets/fabric28-1.png)
-![alt text](assets/fabric28-2.png)
-Go to the azure portal and create a shared access policy for the event hub created in the deployment and copy it
-![alt text](assets/fabric28-3.png)
-Paste the event hub connection string into the notebook to generate synthetic events
-![alt text](assets/fabric28-4.png)
-Run the notebook's cells to generate "fake" impressions and clicks events and stream them to our event hub
-![alt text](assets/fabric28-5.png)
-## Eventstream 
-Create an eventstream to stream events from event hub to our KQL DB
-![alt text](assets/fabric30.png)
-![alt text](assets/fabric31.png)
-![alt text](assets/fabric32.png)
-![alt text](assets/fabric33.png)
-![alt text](assets/fabric34.png)
-![alt text](assets/fabric35.png)
-![alt text](assets/fabric36.png)
-![alt text](assets/fabric37.png)
-![alt text](assets/fabric38.png)
-![alt text](assets/fabric39.png)
-![alt text](assets/fabric40.png)
-![alt text](assets/fabric41.png)
-![alt text](assets/fabric42.png)
-![alt text](assets/fabric43.png)
-![alt text](assets/fabric44.png)
-Run a KQL query to check the incoming events in the clicks table
-![alt text](assets/fabric44-1.png)
-
-Note that the events table contains both clicks and impressions events that differ in the JSON schema of their dynamic fields.
+Create Data pipelines to copy the data from the SQL DB tables to our KQL DB.  
 
 
-## Dashboard
-1. In the file [dashboard-RTA dashboard.json](<https://github.com/denisa-ms/adx-analytics-fabric/blob/main/dashboards/dashboard-analytics%20RTA%20dashboard.json>) edit the **clusterUri, workspace and database** (see below).  
-```
-"dataSources": [
-        {
-            "id": "aa9511ff-57a8-4e42-aa58-988fca974be5",
-            "name": "RTA_analytics_demo_kqldb",
-            "scopeId": "kusto-trident",
-            "kind": "kusto-trident",
-            "clusterUri": "<KQL URI HERE>",
-            "workspace": "<WORKSPACE ID HERE>",
-            "database": "<KQL DB HERE>"
-        }
-    ],
-```  
+## RTA Dashboard
+In this step we will create a real time dashboard to visualize the data that looks as follows:  
+![alt text](assets/dashboard.png)
 
-2. Go to our KQL DB in the Fabric Workspace to copy the KQL cluster URI and paste it in the json file defining the dashboard, save the file  
-![alt text](assets/fabric45-1.png)
-![alt text](assets/fabric45-2.png)
-![alt text](assets/fabric45-3.png)
-3. Get the Workspace ID and the Database ID:   
-When you click on the KQL DB, the URL contains the workspace ID, which is the unique identifier after /groups/ in the URL.  
-For example: https://powerbi.com/groups/11aa111-a11a-1111-1abc-aa1111aaaa/....  
-The Database ID can bd found after /databases/ in the URL.  
-For example: https://msit.powerbi.com/groups/11aa111-a11a-1111-1abc-aa1111aaaa/databases/11aa111-a11a-1111-1abc-aa1111aaaa..  
- 
-4. Save the file.  
-5. Create a Real time analytics Dashboard to visualize the data
-![alt text](assets/fabric46.png)
-![alt text](assets/fabric47.png)
-![alt text](assets/fabric48.png)
-![alt text](assets/fabric49.png)
-![alt text](assets/fabric50.png)
-6. Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
+Create a Data Pipeline that you can run periodically to copy data to our Eventhouse DB.
+![alt text](assets/fabrta31.png)
+Name it "Copy Address table".  
+![alt text](assets/fabrta32.png)
+
+Select the Pipeline Activity - Copy data activity 
+![alt text](assets/fabrta33.png)
+
+
+
+Visualize the streaming data that will be refreshed every 30 seconds, or manually refresh it to save the changes
 ![alt text](assets/fabric54.png)
-7. Stop running the notebook
+Stop running the notebook
 ![alt text](assets/fabric55.png)
 
