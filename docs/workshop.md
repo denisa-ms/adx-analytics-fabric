@@ -183,13 +183,39 @@ Create an Eventhouse called "RTAdemo"
 ![alt text](assets/fabrta1.png)
 ![alt text](assets/fabrta2.png)
 
+## Accessing your Eventhouse data in a Lakehouse
+You can read more about this here.  
+[Announcing Delta Lake support in Real-Time Analytics KQL Database](<https://support.fabric.microsoft.com/en-us/blog/announcing-delta-support-in-real-time-analytics-kql-db?ft=All>)   
+
+Enabling data availability of KQL Database in OneLake means that customers can enjoy the best of both worlds: they can query the data with high performance and low latency in their KQL database and query the same data in Delta Lake format via any other Fabric engines such as Power BI Direct Lake mode, Warehouse, Lakehouse, Notebooks, and more.
+
+KQL Database offers a robust mechanism to batch the incoming streams of data into one or more Parquet files suitable for analysis. The Delta Lake representation is provided to keep the data open and reusable. This logical copy is managed once, is paid for once and users should consider it a single data set.
+
+Here is how to set this up.  
+Click on the pencil icon next to the OneLake availability  
+![alt text](assets/fabrta61.png)
+Click active and "Done" button
+![alt text](assets/fabrta62.png)
+Build a new Lakehouse called "RTADemoLakeshouse"
+![alt text](assets/fabrta64.png)
+Click on "Get data" - New shortcut
+![alt text](assets/fabrta65.png)
+Select Microsoft OneLake
+![alt text](assets/fabrta66.png)
+Select all the tables in our Eventhouse KQL DB and click "Next"
+![alt text](assets/fabrta67.png)
+Click "Create"
+![alt text](assets/fabrta68.png)
+Now you will have the Eventhouse KQL DB tables available in your Lakehouse. You can query them as any Lakehouse tables
+![alt text](assets/fabrta69.png)
+
 ## Create a new Eventstream  
-Create an Eventhouse called "RTADemoEventStream"  
+Create an Eventstream called "RTADemoEventStream"  
 ![alt text](assets/fabrta3.png)
 ![alt text](assets/fabrta4.png)
 
 When we create a "Custom app" as a source, an event hub is created and connected to the EventStream for us.  
-Click on the EventStram source - Custom App to get the event hub endpoint and key to send the events from our notebook.  
+Click on the Eventstream source - Custom App to get the event hub endpoint and key to send the events from our notebook.  
 ![alt text](assets/fabrta5.png)
 ![alt text](assets/fabrta6.png)  
 
