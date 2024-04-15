@@ -196,7 +196,7 @@ Click on the pencil icon next to the OneLake availability
 ![alt text](assets/fabrta61.png)
 Click active and "Done" button
 ![alt text](assets/fabrta62.png)
-Build a new Lakehouse called "RTADemoLakeshouse"
+Build a new Lakehouse called "RTADemoLakehouse"
 ![alt text](assets/fabrta64.png)
 Click on "Get data" - New shortcut
 ![alt text](assets/fabrta65.png)
