@@ -1,0 +1,3 @@
+CDC from SQL 
+enable CDC in DB
+SalesLT.Customer,SalesLT.Address,SalesLT.SalesOrderHeader,SalesLT.SalesOrderDetail
